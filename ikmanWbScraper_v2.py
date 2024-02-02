@@ -11,7 +11,7 @@ import time
 webdriver_path = 'C:/Users/ASUS/Downloads/edgedriver_win64/msedgedriver.exe'
 
 # URL of the website you want to scrape
-url = 'https://ikman.lk/en/ad/nissan-sunny-super-saloon-n17-2005-for-sale-kalutara'
+url = 'https://ikman.lk/en/'
 
 # Configure Edge options
 options = Options()
