@@ -19,9 +19,24 @@ namespace ShadowByte_v3.Controllers
         [HttpGet]
         public IActionResult GetData()
         {
-            var nodes = _context.Nodes.ToList();
-            var links = _context.Links.ToList();
+            // Fetch nodes and links from the database
+            var nodes = _context.Nodes
+                .Select(n => new
+                {
+                    id = n.Id,
+                    name = n.Name
+                })
+                .ToList();
 
+            var links = _context.Links
+                .Select(l => new
+                {
+                    source = l.SourceId,
+                    target = l.TargetId
+                })
+                .ToList();
+
+            // Return the data in the expected format
             return Ok(new { nodes, links });
         }
     }
