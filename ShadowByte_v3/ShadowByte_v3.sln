@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35013.160
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShadowByte_v3", "ShadowByte_v3.csproj", "{252CD09D-E4A1-4019-9DB8-5B5A22398AB3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{252CD09D-E4A1-4019-9DB8-5B5A22398AB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{252CD09D-E4A1-4019-9DB8-5B5A22398AB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{252CD09D-E4A1-4019-9DB8-5B5A22398AB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{252CD09D-E4A1-4019-9DB8-5B5A22398AB3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FD8A71AF-D13F-47F1-B363-ABE28DA71271}
+	EndGlobalSection
+EndGlobal

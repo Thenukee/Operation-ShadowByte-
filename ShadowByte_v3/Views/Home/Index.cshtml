@@ -1,0 +1,131 @@
+﻿@model ShadowByte_v3.Models.IndexViewModel
+@inject Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary ViewData
+
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/site.css">
+    <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo-details">
+            <div class="logo_name">Menu</div>
+            <i class='bx bx-menu' id="btn"></i>
+        </div>
+        <ul class="nav-list">
+            <li>
+                <i class='bx bx-search'></i>
+                <input type="text" placeholder="Search">
+                <span class="tooltip">Recherche</span>
+            </li>
+            <!-- Other list items -->
+        </ul>
+    </div>
+    <section class="home-section">
+        <div class="text">ShadowByte</div>
+        <div id="graph"></div>
+    </section>
+    <script src="~/js/site.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Fetch data from the API
+            fetch('/api/data')
+                .then(response => response.json())
+                .then(data => {
+                    const nodes = data.nodes;
+                    const links = data.links;
+
+                    // Define the dimensions of the SVG container
+                    const width = 800;
+                    const height = 600;
+
+                    // Create an SVG element
+                    const svg = d3.select("#graph").append("svg")
+                        .attr("width", width)
+                        .attr("height", height);
+
+                    // Create a simulation with forces for the nodes and links
+                    const simulation = d3.forceSimulation(nodes)
+                        .force("link", d3.forceLink(links).id(d => d.id))
+                        .force("charge", d3.forceManyBody())
+                        .force("center", d3.forceCenter(width / 2, height / 2));
+
+                    // Create link elements
+                    const link = svg.append("g")
+                        .attr("class", "links")
+                        .selectAll("line")
+                        .data(links)
+                        .enter().append("line")
+                        .attr("stroke-width", 2)
+                        .attr("stroke", "#999");
+
+                    // Create node elements
+                    const node = svg.append("g")
+                        .attr("class", "nodes")
+                        .selectAll("circle")
+                        .data(nodes)
+                        .enter().append("circle")
+                        .attr("r", 5)
+                        .attr("fill", "#69b3a2")
+                        .call(d3.drag()
+                            .on("start", dragstarted)
+                            .on("drag", dragged)
+                            .on("end", dragended));
+
+                    // Add tooltips to nodes
+                    node.append("title")
+                        .text(d => d.name);
+
+                    // Update positions of nodes and links on each tick of the simulation
+                    function ticked() {
+                        link
+                            .attr("x1", d => d.source.x)
+                            .attr("y1", d => d.source.y)
+                            .attr("x2", d => d.target.x)
+                            .attr("y2", d => d.target.y);
+
+                        node
+                            .attr("cx", d => d.x)
+                            .attr("cy", d => d.y);
+                    }
+
+                    // Dragging functions to update node positions
+                    function dragstarted(event, d) {
+                        if (!event.active) simulation.alphaTarget(0.3).restart();
+                        d.fx = d.x;
+                        d.fy = d.y;
+                    }
+
+                    function dragged(event, d) {
+                        d.fx = event.x;
+                        d.fy = event.y;
+                    }
+
+                    function dragended(event, d) {
+                        if (!event.active) simulation.alphaTarget(0);
+                        d.fx = null;
+                        d.fy = null;
+                    }
+
+                    // Start the simulation
+                    simulation
+                        .nodes(nodes)
+                        .on("tick", ticked);
+
+                    simulation.force("link")
+                        .links(links);
+                });
+        });
+    </script>
+
+</body>
+</html>
