@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ASUS\\source\\repos\\ShadowByte_v3\\ShadowByte_v3.csproj": {}
+    "C:\\Users\\Tharusha\\Documents\\GitHub\\Forked Repositories\\Operation-ShadowByte\\ShadowByte_v3\\ShadowByte_v3.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ASUS\\source\\repos\\ShadowByte_v3\\ShadowByte_v3.csproj": {
+    "C:\\Users\\Tharusha\\Documents\\GitHub\\Forked Repositories\\Operation-ShadowByte\\ShadowByte_v3\\ShadowByte_v3.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ASUS\\source\\repos\\ShadowByte_v3\\ShadowByte_v3.csproj",
+        "projectUniqueName": "C:\\Users\\Tharusha\\Documents\\GitHub\\Forked Repositories\\Operation-ShadowByte\\ShadowByte_v3\\ShadowByte_v3.csproj",
         "projectName": "ShadowByte_v3",
-        "projectPath": "C:\\Users\\ASUS\\source\\repos\\ShadowByte_v3\\ShadowByte_v3.csproj",
-        "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ASUS\\source\\repos\\ShadowByte_v3\\obj\\",
+        "projectPath": "C:\\Users\\Tharusha\\Documents\\GitHub\\Forked Repositories\\Operation-ShadowByte\\ShadowByte_v3\\ShadowByte_v3.csproj",
+        "packagesPath": "C:\\Users\\Tharusha\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Tharusha\\Documents\\GitHub\\Forked Repositories\\Operation-ShadowByte\\ShadowByte_v3\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\ASUS\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Tharusha\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [

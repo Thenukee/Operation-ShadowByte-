@@ -135,3 +135,12 @@ C:\Users\ASUS\source\repos\ShadowByte_v3\obj\Debug\net8.0\refint\ShadowByte_v3.d
 C:\Users\ASUS\source\repos\ShadowByte_v3\obj\Debug\net8.0\ShadowByte_v3.pdb
 C:\Users\ASUS\source\repos\ShadowByte_v3\obj\Debug\net8.0\ShadowByte_v3.genruntimeconfig.cache
 C:\Users\ASUS\source\repos\ShadowByte_v3\obj\Debug\net8.0\ref\ShadowByte_v3.dll
+C:\Users\Tharusha\Documents\GitHub\Forked Repositories\Operation-ShadowByte\ShadowByte_v3\obj\Debug\net8.0\ShadowByte_v3.csproj.AssemblyReference.cache
+C:\Users\Tharusha\Documents\GitHub\Forked Repositories\Operation-ShadowByte\ShadowByte_v3\obj\Debug\net8.0\ShadowByte_v3.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Tharusha\Documents\GitHub\Forked Repositories\Operation-ShadowByte\ShadowByte_v3\obj\Debug\net8.0\ShadowByte_v3.AssemblyInfoInputs.cache
+C:\Users\Tharusha\Documents\GitHub\Forked Repositories\Operation-ShadowByte\ShadowByte_v3\obj\Debug\net8.0\ShadowByte_v3.AssemblyInfo.cs
+C:\Users\Tharusha\Documents\GitHub\Forked Repositories\Operation-ShadowByte\ShadowByte_v3\obj\Debug\net8.0\ShadowByte_v3.csproj.CoreCompileInputs.cache
+C:\Users\Tharusha\Documents\GitHub\Forked Repositories\Operation-ShadowByte\ShadowByte_v3\obj\Debug\net8.0\ShadowByte_v3.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\Tharusha\Documents\GitHub\Forked Repositories\Operation-ShadowByte\ShadowByte_v3\obj\Debug\net8.0\ShadowByte_v3.RazorAssemblyInfo.cache
+C:\Users\Tharusha\Documents\GitHub\Forked Repositories\Operation-ShadowByte\ShadowByte_v3\obj\Debug\net8.0\ShadowByte_v3.RazorAssemblyInfo.cs
+C:\Users\Tharusha\Documents\GitHub\Forked Repositories\Operation-ShadowByte\ShadowByte_v3\obj\Debug\net8.0\ShadowByte_v3.sourcelink.json
