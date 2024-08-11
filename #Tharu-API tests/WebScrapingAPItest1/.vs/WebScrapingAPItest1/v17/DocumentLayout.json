@@ -1,0 +1,225 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|c:\\users\\tharusha\\source\\repos\\webscrapingapitest1\\webscrapingapitest1\\controllers\\moduleacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|solutionrelative:webscrapingapitest1\\controllers\\moduleacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|c:\\users\\tharusha\\source\\repos\\webscrapingapitest1\\webscrapingapitest1\\controllers\\bookscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|solutionrelative:webscrapingapitest1\\controllers\\bookscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|c:\\users\\tharusha\\source\\repos\\webscrapingapitest1\\webscrapingapitest1\\services\\moduleaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|solutionrelative:webscrapingapitest1\\services\\moduleaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|c:\\users\\tharusha\\source\\repos\\webscrapingapitest1\\webscrapingapitest1\\services\\imodulebservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|solutionrelative:webscrapingapitest1\\services\\imodulebservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|c:\\users\\tharusha\\source\\repos\\webscrapingapitest1\\webscrapingapitest1\\services\\modulebservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|solutionrelative:webscrapingapitest1\\services\\modulebservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|c:\\users\\tharusha\\source\\repos\\webscrapingapitest1\\webscrapingapitest1\\services\\imoduleaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|solutionrelative:webscrapingapitest1\\services\\imoduleaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|c:\\users\\tharusha\\source\\repos\\webscrapingapitest1\\webscrapingapitest1\\webscrapingapitest1.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|solutionrelative:webscrapingapitest1\\webscrapingapitest1.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|c:\\users\\tharusha\\source\\repos\\webscrapingapitest1\\webscrapingapitest1\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|solutionrelative:webscrapingapitest1\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|c:\\users\\tharusha\\source\\repos\\webscrapingapitest1\\webscrapingapitest1\\startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|solutionrelative:webscrapingapitest1\\startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|c:\\users\\tharusha\\source\\repos\\webscrapingapitest1\\webscrapingapitest1\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|solutionrelative:webscrapingapitest1\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|c:\\users\\tharusha\\source\\repos\\webscrapingapitest1\\webscrapingapitest1\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|solutionrelative:webscrapingapitest1\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|c:\\users\\tharusha\\source\\repos\\webscrapingapitest1\\webscrapingapitest1\\models\\book.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{844ED903-958B-4FE5-BE76-FFA22D27F250}|WebScrapingAPItest1\\WebScrapingAPItest1.csproj|solutionrelative:webscrapingapitest1\\models\\book.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ModuleAController.cs",
+              "DocumentMoniker": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Controllers\\ModuleAController.cs",
+              "RelativeDocumentMoniker": "WebScrapingAPItest1\\Controllers\\ModuleAController.cs",
+              "ToolTip": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Controllers\\ModuleAController.cs",
+              "RelativeToolTip": "WebScrapingAPItest1\\Controllers\\ModuleAController.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-07T03:43:11.41Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "BooksController.cs",
+              "DocumentMoniker": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Controllers\\BooksController.cs",
+              "RelativeDocumentMoniker": "WebScrapingAPItest1\\Controllers\\BooksController.cs",
+              "ToolTip": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Controllers\\BooksController.cs",
+              "RelativeToolTip": "WebScrapingAPItest1\\Controllers\\BooksController.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-07T03:43:11.211Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ModuleAService.cs",
+              "DocumentMoniker": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Services\\ModuleAService.cs",
+              "RelativeDocumentMoniker": "WebScrapingAPItest1\\Services\\ModuleAService.cs",
+              "ToolTip": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Services\\ModuleAService.cs",
+              "RelativeToolTip": "WebScrapingAPItest1\\Services\\ModuleAService.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-07T03:43:10.951Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "IModuleBService.cs",
+              "DocumentMoniker": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Services\\IModuleBService.cs",
+              "RelativeDocumentMoniker": "WebScrapingAPItest1\\Services\\IModuleBService.cs",
+              "ToolTip": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Services\\IModuleBService.cs",
+              "RelativeToolTip": "WebScrapingAPItest1\\Services\\IModuleBService.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-07T03:43:10.722Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ModuleBService.cs",
+              "DocumentMoniker": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Services\\ModuleBService.cs",
+              "RelativeDocumentMoniker": "WebScrapingAPItest1\\Services\\ModuleBService.cs",
+              "ToolTip": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Services\\ModuleBService.cs",
+              "RelativeToolTip": "WebScrapingAPItest1\\Services\\ModuleBService.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-07T03:43:10.439Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "IModuleAService.cs",
+              "DocumentMoniker": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Services\\IModuleAService.cs",
+              "RelativeDocumentMoniker": "WebScrapingAPItest1\\Services\\IModuleAService.cs",
+              "ToolTip": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Services\\IModuleAService.cs",
+              "RelativeToolTip": "WebScrapingAPItest1\\Services\\IModuleAService.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-07T03:43:09.77Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\appsettings.json",
+              "RelativeDocumentMoniker": "WebScrapingAPItest1\\appsettings.json",
+              "ToolTip": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\appsettings.json",
+              "RelativeToolTip": "WebScrapingAPItest1\\appsettings.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2024-08-07T03:43:05.586Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Startup.cs",
+              "DocumentMoniker": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Startup.cs",
+              "RelativeDocumentMoniker": "WebScrapingAPItest1\\Startup.cs",
+              "ToolTip": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Startup.cs",
+              "RelativeToolTip": "WebScrapingAPItest1\\Startup.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-01T04:29:16.449Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Book.cs",
+              "DocumentMoniker": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Models\\Book.cs",
+              "RelativeDocumentMoniker": "WebScrapingAPItest1\\Models\\Book.cs",
+              "ToolTip": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Models\\Book.cs",
+              "RelativeToolTip": "WebScrapingAPItest1\\Models\\Book.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-01T04:24:21.701Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "WebScrapingAPItest1.csproj",
+              "DocumentMoniker": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\WebScrapingAPItest1.csproj",
+              "RelativeDocumentMoniker": "WebScrapingAPItest1\\WebScrapingAPItest1.csproj",
+              "ToolTip": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\WebScrapingAPItest1.csproj",
+              "RelativeToolTip": "WebScrapingAPItest1\\WebScrapingAPItest1.csproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABIAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2024-08-01T04:15:30.765Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "WebScrapingAPItest1\\Data\\AppDbContext.cs",
+              "ToolTip": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Data\\AppDbContext.cs",
+              "RelativeToolTip": "WebScrapingAPItest1\\Data\\AppDbContext.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAYAAAAFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-01T04:25:45.683Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Program.cs",
+              "RelativeDocumentMoniker": "WebScrapingAPItest1\\Program.cs",
+              "ToolTip": "C:\\Users\\Tharusha\\source\\repos\\WebScrapingAPItest1\\WebScrapingAPItest1\\Program.cs",
+              "RelativeToolTip": "WebScrapingAPItest1\\Program.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-01T04:28:48.912Z"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
