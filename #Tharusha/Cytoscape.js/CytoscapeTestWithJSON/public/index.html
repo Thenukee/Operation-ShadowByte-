@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Network Visualization</title>
+    <script src="https://unpkg.com/cytoscape@3.21.1/dist/cytoscape.min.js"></script>
+    <style>
+        #cy {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc;
+        }
+        #search-bar {
+            margin-bottom: 10px;
+        }
+        #popup {
+            position: absolute;
+            display: none;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: white;
+            z-index: 1000;
+        }
+        #overlay {
+            position: fixed;
+            display: none;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        #popup-message {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="search-bar">
+    <input type="text" id="keyword" placeholder="Enter a keyword..." />
+    <button onclick="searchKeyword()">Search</button>
+</div>
+<div id="cy"></div>
+
+<div id="overlay"></div>
+<div id="popup">
+    <div id="popup-message"></div>
+    <button id="confirm-search">Search</button>
+    <button id="close-popup">Close</button>
+</div>
+
+<script>
+    let cy = cytoscape({
+        container: document.getElementById('cy'),
+        elements: [],
+        style: [
+            {
+                selector: 'node',
+                style: {
+                    'label': 'data(label)',
+                    'background-color': '#0074D9',
+                    'text-valign': 'center',
+                    'text-halign': 'center',
+                    'color': 'black',
+                    'font-size': '14px'
+                }
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'width': 2,
+                    'line-color': '#ccc'
+                }
+            }
+        ],
+        layout: {
+            name: 'breadthfirst',
+            directed: true,
+            padding: 10
+        }
+    });
+
+    // Fetch and save JSON data from/to the server
+    function fetchNodeData() {
+        return fetch('/get_json')
+            .then(response => response.json())
+            .catch(error => {
+                console.error('Error fetching JSON:', error);
+                return {};
+            });
+    }
+
+    function updateNodeData(keyword, type, details) {
+        return fetch('/update_json', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                keyword: keyword,
+                type: type,
+                details: details
+            })
+        })
+        .then(response => response.json())
+        .catch(error => {
+            console.error('Error updating JSON:', error);
+        });
+    }
+
+    function clearNodeData() {
+        return fetch('/clear_json', { method: 'POST' })
+            .then(response => response.json())
+            .catch(error => {
+                console.error('Error clearing JSON:', error);
+            });
+    }
+
+    // Validate the keyword and return its type or null
+    function validateKeyword(keyword) {
+        const patterns = {
+            name: /^[a-zA-Z\s]+$/,
+            email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            mobile: /^\+?[0-9]{7,15}$/,
+            nic: /^[0-9]{9}[vVxX]$/
+        };
+
+        if (patterns.name.test(keyword)) return 'name';
+        if (patterns.email.test(keyword)) return 'email';
+        if (patterns.mobile.test(keyword)) return 'mobile';
+        if (patterns.nic.test(keyword)) return 'nic';
+
+        return null;
+    }
+
+    // Generate random data based on type
+    function generateRandomData(keyword, type) {
+        let details = [];
+        const random = Math.random();
+
+        if (type === 'name') {
+            if (Math.random() > 0.3) details.push({ id: `email-${random}`, label: `${keyword.toLowerCase()}@example.com`, type: 'email' });
+            if (Math.random() > 0.4) details.push({ id: `property-${random}`, label: `${keyword}'s Building`, type: 'property' });
+            if (Math.random() > 0.2) details.push({ id: `username-${random}`, label: `${keyword}_user`, type: 'social' });
+            if (Math.random() > 0.5) details.push({ id: `mobile-${random}`, label: `Mobile: ${Math.floor(random * 10000000000)}`, type: 'mobile' });
+        } else if (type === 'social') {
+            const isPrivate = random > 0.5;
+            details.push({ id: `privacy-${random}`, label: isPrivate ? 'Private' : 'Public', type: isPrivate ? 'private' : 'public' });
+            if (isPrivate) {
+                if (Math.random() > 0.3) details.push({ id: `name-${random}`, label: `Name: ${keyword}`, type: 'name' });
+                if (Math.random() > 0.5) details.push({ id: `followers-${random}`, label: `Followers: ${Math.floor(random * 1000)}`, type: 'social' });
+                if (Math.random() > 0.5) details.push({ id: `following-${random}`, label: `Following: ${Math.floor(random * 1000)}`, type: 'social' });
+            } else {
+                if (Math.random() > 0.4) details.push({ id: `email-${random}`, label: `Email: ${keyword.toLowerCase()}@example.com`, type: 'email' });
+                if (Math.random() > 0.3) details.push({ id: `birthdate-${random}`, label: `Birthdate: ${Math.floor(random * 30) + 1} Jan 2000`, type: 'social' });
+            }
+        } else if (type === 'email') {
+            const isHacked = random > 0.5;
+            if (Math.random() > 0.3) details.push({ id: `status-${random}`, label: isHacked ? 'Hacked' : 'Safe', type: isHacked ? 'hacked' : 'safe' });
+            if (Math.random() > 0.4) details.push({ id: `username-${random}`, label: `${keyword.split('@')[0]}_user`, type: 'social' });
+        } else if (type === 'mobile') {
+            if (Math.random() > 0.5) details.push({ id: `name-${random}`, label: `Name: ${keyword}`, type: 'name' });
+            if (Math.random() > 0.6) details.push({ id: `country-${random}`, label: `Country: ${Math.random() > 0.5 ? 'USA' : 'Canada'}`, type: 'country' });
+        } else if (type === 'nic') {
+            if (Math.random() > 0.4) details.push({ id: `name-${random}`, label: `Name: ${keyword}`, type: 'name' });
+            if (Math.random() > 0.3) details.push({ id: `address-${random}`, label: `Address: Some City`, type: 'address' });
+            if (Math.random() > 0.6) details.push({ id: `country-${random}`, label: `Country: Some Country`, type: 'country' });
+        }
+
+        return details;
+    }
+
+    // Handle the initial search action
+    function searchKeyword() {
+        const keyword = document.getElementById('keyword').value.trim();
+        const keywordType = validateKeyword(keyword);
+
+        if (!keywordType) {
+            alert('Input is not sufficient. Be more specific.');
+            return;
+        }
+
+        const parentNode = {
+            data: { id: `root-${keyword}`, label: keyword, type: keywordType }
+        };
+        cy.add(parentNode);
+
+        const details = generateRandomData(keyword, keywordType);
+
+        details.forEach(detail => {
+            cy.add({ data: { id: detail.id, label: detail.label, type: detail.type } });
+            cy.add({ data: { source: parentNode.data.id, target: detail.id } });
+        });
+
+        cy.layout({ name: 'breadthfirst', directed: true, padding: 10 }).run();
+
+        // Update the nodeData JSON with new data
+        updateNodeData(keyword, keywordType, details);
+
+        // Clear the search bar after the search
+        document.getElementById('keyword').value = '';
+    }
+
+    // Handle double-click event on nodes
+    cy.on('dblclick', 'node', function (evt) {
+        const nodeId = evt.target.id();
+        const nodeLabel = evt.target.data('label');
+        const nodeType = evt.target.data('type');
+
+        // Update popup message
+        document.getElementById('popup-message').textContent = `Search data related to "${nodeLabel}".`;
+
+        // Show the popup and overlay
+        document.getElementById('popup').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+
+        // Handle search confirmation
+        document.getElementById('confirm-search').onclick = function () {
+            const details = generateRandomData(nodeLabel, nodeType);
+
+            details.forEach(detail => {
+                cy.add({ data: { id: detail.id, label: detail.label, type: detail.type } });
+                cy.add({ data: { source: nodeId, target: detail.id } });
+            });
+
+            // Update the nodeData JSON with new data
+            updateNodeData(nodeLabel, nodeType, details);
+
+            // Re-run the layout to update the positions
+            cy.layout({ name: 'breadthfirst', directed: true, padding: 10 }).run();
+
+            // Close the popup
+            document.getElementById('popup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        };
+    });
+
+    // Handle closing the popup
+    document.getElementById('close-popup').onclick = function () {
+        document.getElementById('popup').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    };
+
+    // Style nodes based on type
+    cy.on('add', 'node', function (evt) {
+        const nodeType = evt.target.data('type');
+
+        if (nodeType === 'hacked') {
+            evt.target.style('background-color', 'red');
+        } else if (nodeType === 'safe') {
+            evt.target.style('background-color', 'green');
+        } else if (nodeType === 'private') {
+            evt.target.style('background-color', '#FF851B');
+        } else if (nodeType === 'public') {
+            evt.target.style('background-color', '#2ECC40');
+        }
+    });
+
+    // Clear the JSON data from server when the page is refreshed
+    window.onbeforeunload = function () {
+        clearNodeData();
+    };
+</script>
+
+</body>
+</html>
