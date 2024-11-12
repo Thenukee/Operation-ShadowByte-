@@ -1,0 +1,21 @@
+
+{
+    "platform": "Domain Lookup",
+    "domain_name": "example.com",
+    "owner": "John Doe",
+    "organization": "XYZ Corp",
+    "registered_date": "2021-01-01",
+    "expiry_date": "2024-01-01",
+    "registrar": "ABC Domains",
+    "dns_records": [
+      {
+        "record_type": "A",
+        "value": "192.168.1.1"
+      },
+      {
+        "record_type": "MX",
+        "value": "mail.example.com"
+      }
+    ]
+  }
+  
