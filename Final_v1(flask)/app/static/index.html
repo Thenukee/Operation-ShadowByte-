@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta and Title -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShadowByte - Suspect Visualization</title>
+    <!-- External Libraries -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.21.1/cytoscape.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet" />
+    <!-- Styles -->
+    <style>
+        /* General styles */
+        body {
+            margin: 0;
+            font-family: 'Ubuntu', sans-serif;
+            background-color: #1e2a38;
+            color: #ffffff;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        /* Sidebar styles (Left Side) */
+        .sidebar {
+            width: 300px;
+            background-color: #2b3a4b;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .sidebar h1 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: #58a6ff;
+            text-align: center;
+        }
+        .sidebar h1 i {
+            margin-right: 10px;
+        }
+        .sidebar .section {
+            margin-bottom: 20px;
+        }
+        .sidebar .section h2 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #58a6ff;
+        }
+        .sidebar .section p {
+            margin: 5px 0;
+        }
+        /* Added frame to overview section */
+        .overview-frame {
+            border: 1px solid #58a6ff;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        /* Main content styles */
+        .main-content {
+            flex-grow: 1;
+            background-color: #1e2a38;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-content .header input {
+            width: 60%;
+            padding: 8px;
+            background-color: #1e2a38;
+            border: 1px solid #3a4a5b;
+            border-radius: 5px;
+            color: #ffffff;
+        }
+        .main-content .header {
+            background-color: #2b3a4b;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative; /* Ensure positioning context */
+        }
+
+        .main-content .header .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .main-content .header .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .main-content .header .buttons button {
+            background-color: #1e2a38;
+            color: #ffffff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .main-content .header .buttons button i {
+            margin-right: 5px;
+        }
+
+        .main-content .header .buttons button:hover {
+            background-color: #32495b;
+        }
+
+        .main-content .header .profile-icon {
+            font-size: 28px;
+            cursor: pointer;
+            color: #ffffff;
+            /* Add the following to align it to the top right */
+            margin-left: auto;
+        }
+        .main-content .graph {
+            flex-grow: 1;
+            position: relative;
+        }
+        #cy {
+            width: 100%;
+            height: 100%;
+        }
+        .profile-icon {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #ffffff;
+            z-index: 1001;
+        }
+
+        /* Footer styles */
+        .footer {
+            background-color: #2b3a4b;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        .footer a i {
+            margin-right: 5px;
+        }
+        .footer div a i {
+            margin-right: 5px;
+        }
+        /* Tool panel styles (Right Side) */
+        .tool-panel {
+            width: 300px;
+            background-color: #2b3a4b;
+            padding: 30px 20px 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .tool-panel .category {
+            margin-bottom: 20px;
+        }
+        .tool-panel .category h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            background-color: #1e2a38;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .tool-panel .category h2 i {
+            margin-right: 10px;
+        }
+        .tool-panel .category h2:hover {
+            background-color: #3a4a5b;
+        }
+        .tool-panel .tool-list {
+            margin-top: 10px;
+            padding-left: 20px;
+            display: none;
+        }
+        .tool-panel .tool-list button {
+            width: 100%;
+            background-color: #1e2a38;
+            color: #ffffff;
+            border: none;
+            padding: 10px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .tool-panel .tool-list button i {
+            margin-right: 10px;
+            color: #58a6ff;
+        }
+        .tool-panel .tool-list button:hover {
+            background-color: #32495b;
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+        }
+        .modal-content {
+            background-color: #2b3a4b;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 400px;
+            border-radius: 10px;
+            color: #ffffff;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+            color: #58a6ff;
+        }
+        .modal-content label {
+            display: block;
+            margin: 15px 0 5px;
+        }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 8px;
+            background-color: #1e2a38;
+            border: 1px solid #3a4a5b;
+            border-radius: 5px;
+            color: #ffffff;
+        }
+        .modal-content .buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .modal-content .buttons button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .modal-content .buttons .cancel {
+            background-color: #555;
+            color: #fff;
+        }
+        .modal-content .buttons .submit {
+            background-color: #58a6ff;
+            color: #fff;
+        }
+        .modal-content .buttons button:hover {
+            opacity: 0.8;
+        }
+        /* Suspect detail modal */
+        .detail-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+        }
+        .detail-modal-content {
+            background-color: #2b3a4b;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 400px;
+            border-radius: 10px;
+            color: #ffffff;
+        }
+        .detail-modal-content h2 {
+            margin-top: 0;
+            color: #58a6ff;
+        }
+        .detail-modal-content p {
+            margin: 10px 0;
+        }
+        .detail-modal-content p span {
+            font-weight: bold;
+        }
+        .detail-modal-content .close-btn {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .detail-modal-content .close-btn button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #58a6ff;
+            color: #fff;
+        }
+        .detail-modal-content .close-btn button:hover {
+            opacity: 0.8;
+        }
+        /* Account modal styles */
+        .account-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+        }
+        .account-modal-content {
+            background-color: #2b3a4b;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px;
+            border-radius: 10px;
+            color: #ffffff;
+            text-align: center;
+        }
+        .account-modal-content h2 {
+            margin-top: 0;
+            color: #58a6ff;
+        }
+        .account-modal-content p {
+            margin: 15px 0;
+        }
+        .account-modal-content button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #58a6ff;
+            color: #fff;
+            margin-top: 20px;
+        }
+        .account-modal-content button:hover {
+            opacity: 0.8;
+        }
+        /* Modal for Dork Suspect Options */
+        #dork-modal .modal-content label {
+            margin: 10px 0 5px;
+        }
+        #dork-modal .modal-content .tool-list {
+            padding-left: 20px;
+        }
+        /* Modal for Existing Suspect */
+        #existing-suspect-modal .modal-content p span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar (Left Side) -->
+        <div class="sidebar">
+            <h1><i class="fas fa-user-secret"></i> Suspect Network</h1>
+            <div class="section overview-frame">
+                <h2>Overall Details</h2>
+                <p>Total Suspects: <span id="total-suspects">0</span></p>
+                <p>Total Connections: <span id="total-connections">0</span></p>
+            </div>
+        </div>
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <input id="search" placeholder="Search in the graph..." type="text" />
+                <div class="header-right">
+                    <div class="buttons">
+                        <button id="add-node"><i class="fas fa-plus"></i> Add Suspect</button>
+                        <button id="delete-node"><i class="fas fa-trash"></i> Delete Suspect</button>
+                    </div>
+                </div>
+            </div>
+            <div class="graph">
+                <div id="cy"></div>
+            </div>
+            <div class="footer">
+                <a href="#"><i class="fas fa-server"></i> API requests: <span id="api-requests">0</span></a>
+                <div>
+                    <a href="#"><i class="fas fa-book"></i> Documentation</a> |
+                    <a href="#"><i class="fas fa-code"></i> API</a> |
+                    <a href="#"><i class="fas fa-comment"></i> Send feedback</a>
+                </div>
+            </div>
+        </div>
+        <!-- Profile Icon -->
+        <i class="fas fa-user-circle profile-icon" id="profile-icon"></i>
+        <!-- Tool Panel (Right Side) -->
+        <div class="tool-panel">
+            <!-- Tool panel content -->
+            <div class="category">
+                <h2><i class="fas fa-tools"></i> Tools</h2>
+                <div class="tool-list">
+                    <button id="add-connection"><i class="fas fa-link"></i> Add Connection</button>
+                    <button id="analyze-network"><i class="fas fa-search"></i> Analyze Network</button>
+                    <button id="export-data"><i class="fas fa-file-export"></i> Export Data</button>
+                    <button id="import-data"><i class="fas fa-file-import"></i> Import Data</button>
+                    <button id="settings"><i class="fas fa-cog"></i> Settings</button>
+                </div>
+            </div>
+            <div class="category">
+                <h2><i class="fas fa-database"></i> Data Collection</h2>
+                <div class="tool-list">
+                    <button id="web-scraping"><i class="fas fa-globe"></i> Web Scraping</button>
+                    <button id="api-integration"><i class="fas fa-plug"></i> API Integration</button>
+                    <button id="social-media-scraping"><i class="fas fa-hashtag"></i> Social Media Scraping</button>
+                    <button id="dork-suspect"><i class="fas fa-magnifying-glass"></i> Dork Suspect</button> <!-- New Button -->
+                </div>
+            </div>
+            <div class="category">
+                <h2><i class="fas fa-chart-bar"></i> Analytics</h2>
+                <div class="tool-list">
+                    <button id="generate-reports"><i class="fas fa-file-alt"></i> Generate Reports</button>
+                    <button id="statistics"><i class="fas fa-chart-pie"></i> Statistics</button>
+                    <button id="trend-analysis"><i class="fas fa-chart-line"></i> Trend Analysis</button>
+                </div>
+            </div>
+            <div class="category">
+                <h2><i class="fas fa-user-shield"></i> Security</h2>
+                <div class="tool-list">
+                    <button id="user-management"><i class="fas fa-users-cog"></i> User Management</button>
+                    <button id="access-control"><i class="fas fa-shield-alt"></i> Access Control</button>
+                    <button id="audit-logs"><i class="fas fa-clipboard-list"></i> Audit Logs</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal for Adding Node -->
+    <div id="node-modal" class="modal">
+        <div class="modal-content">
+            <h2>Add Suspect</h2>
+            <form id="node-form">
+                <!-- Removed Suspect ID field -->
+                <label for="full-name">Full Name:</label>
+                <input type="text" id="full-name" name="full-name" required />
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" />
+                <label for="nic">NIC:</label>
+                <input type="text" id="nic" name="nic" />
+                <label for="social-media">Social Media Accounts:</label>
+                <input type="text" id="social-media" name="social-media" placeholder="Comma-separated usernames" />
+                <div class="buttons">
+                    <button type="button" class="cancel" id="node-cancel-button">Cancel</button>
+                    <button type="submit" class="submit">Add Suspect</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Modal for Suspect Details -->
+    <div id="detail-modal" class="detail-modal">
+        <div class="detail-modal-content">
+            <h2>Suspect Details</h2>
+            <p><span>ID:</span> <span id="detail-id"></span></p>
+            <p><span>Full Name:</span> <span id="detail-fullname"></span></p>
+            <p><span>Email:</span> <span id="detail-email"></span></p>
+            <p><span>NIC:</span> <span id="detail-nic"></span></p>
+            <p><span>Social Media:</span> <span id="detail-socialmedia"></span></p>
+            <div class="close-btn">
+                <button id="close-detail-modal">Close</button>
+            </div>
+        </div>
+    </div>
+    <!-- Account Modal -->
+    <div id="account-modal" class="account-modal">
+        <div class="account-modal-content">
+            <h2>Account Details</h2>
+            <p><strong>Username:</strong> user123</p>
+            <p><strong>Email:</strong> user@example.com</p>
+            <!-- Add more account details as needed -->
+            <button id="logout-button-modal">Logout</button>
+        </div>
+    </div>
+    <!-- Modal for Dork Suspect Options -->
+    <div id="dork-modal" class="modal">
+        <div class="modal-content">
+            <h2>Dork Suspect</h2>
+            <form id="dork-form">
+                <label for="search-all">Search All Name Types:</label>
+                <select id="search-all" name="search-all" required>
+                    <option value="">Select</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+                <label for="search-engines">Select Search Engines:</label>
+                <div>
+                    <input type="checkbox" id="google" name="search-engines" value="google">
+                    <label for="google">Google</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="bing" name="search-engines" value="bing">
+                    <label for="bing">Bing</label>
+                </div>
+                <div class="buttons">
+                    <button type="button" class="cancel" id="dork-cancel-button">Cancel</button>
+                    <button type="submit" class="submit">Start Dorking</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Modal for Existing Suspect -->
+    <div id="existing-suspect-modal" class="modal">
+        <div class="modal-content">
+            <h2>Suspect Already Exists</h2>
+            <p>The suspect "<span id="existing-suspect-name"></span>" has already been scraped.</p>
+            <p>Do you want to use existing data or scrape again?</p>
+            <div class="buttons">
+                <button id="use-existing">Use Existing Data</button>
+                <button id="scrape-again">Scrape Again</button>
+            </div>
+        </div>
+    </div>
+    <!-- Scripts -->
+    <script>
+        // Toggle tool lists
+        document.querySelectorAll('.tool-panel .category h2').forEach(header => {
+            header.addEventListener('click', () => {
+                const toolList = header.nextElementSibling;
+                toolList.style.display = toolList.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Cytoscape
+            var cy = cytoscape({
+                container: document.getElementById('cy'),
+                style: [
+                    {
+                        selector: 'node',
+                        style: {
+                            'width': '40px',
+                            'height': '40px',
+                            'background-color': '#58a6ff',
+                            'background-image': 'https://cdn-icons-png.flaticon.com/512/847/847969.png',
+                            'background-fit': 'cover',
+                            'label': 'data(label)',
+                            'color': '#ffffff',
+                            'text-valign': 'bottom',
+                            'text-halign': 'center',
+                            'font-size': '8px',
+                            'text-margin-y': '5px'
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 2,
+                            'line-color': '#58a6ff',
+                            'target-arrow-color': '#58a6ff',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier'
+                        }
+                    },
+                    {
+                        selector: ':selected',
+                        style: {
+                            'background-color': '#ffa500',
+                            'line-color': '#ffa500',
+                            'target-arrow-color': '#ffa500',
+                            'source-arrow-color': '#ffa500',
+                            'border-width': 2,
+                            'border-color': '#ffffff'
+                        }
+                    }
+                ],
+                elements: [],
+                layout: {
+                    name: 'cose',
+                    padding: 10
+                }
+            });
+
+            // Initialize API request counter
+            let apiRequestCount = 0;
+
+            // Modal elements
+            var addModal = document.getElementById('node-modal');
+            var form = document.getElementById('node-form');
+            var nodeCancelBtn = document.getElementById('node-cancel-button');
+
+            // Open modal on 'Add Node' click
+            document.getElementById('add-node').addEventListener('click', function() {
+                addModal.style.display = 'block';
+            });
+
+            // Close node modal on 'Cancel' click
+            nodeCancelBtn.addEventListener('click', function() {
+                addModal.style.display = 'none';
+                form.reset();
+            });
+
+            // Handle form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Collect form data
+                var fullName = document.getElementById('full-name').value.trim();
+                var email = document.getElementById('email').value.trim();
+                var nic = document.getElementById('nic').value.trim();
+                var socialMedia = document.getElementById('social-media').value.trim();
+
+                // Prepare data to send
+                var suspectData = {
+                    suspect_name: fullName,
+                    email: email,
+                    nic: nic,
+                    social_media: socialMedia
+                };
+
+                // Send POST request to add suspect
+                fetch('/api/add-suspect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(suspectData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert(data.message);
+                        apiRequestCount += 1;
+                        document.getElementById('api-requests').innerText = apiRequestCount;
+
+                        // Add node to the graph
+                        cy.add({
+                            group: 'nodes',
+                            data: {
+                                id: data.suspect_id, // Unique ID returned by backend
+                                label: fullName,
+                                email: email || '',
+                                nic: nic || '',
+                                socialMedia: socialMedia || ''
+                            }
+                        });
+
+                        // Refresh layout
+                        cy.layout({ name: 'cose', padding: 10 }).run();
+
+                        // Update overall details
+                        document.getElementById('total-suspects').innerText = cy.nodes().length;
+                        document.getElementById('total-connections').innerText = cy.edges().length;
+                    } else if (data.status === 'exists') {
+                        // Suspect already exists
+                        openExistingSuspectModal(data.suspect_name);
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while adding the suspect.');
+                });
+
+                // Close modal and reset form
+                addModal.style.display = 'none';
+                form.reset();
+            });
+
+            // Delete node functionality
+            document.getElementById('delete-node').addEventListener('click', function() {
+                var selectedNodes = cy.$(':selected');
+                if (selectedNodes.length > 0) {
+                    // Optionally, confirm deletion
+                    if (confirm('Are you sure you want to delete the selected suspect(s)?')) {
+                        // Extract suspect names or IDs to delete from backend
+                        selectedNodes.forEach(node => {
+                            var suspectName = node.data('label');
+                            // Send DELETE request to backend
+                            fetch('/api/delete-suspect', {
+                                method: 'DELETE',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ suspect_name: suspectName })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    // Successfully deleted on backend
+                                    console.log(`Deleted suspect: ${suspectName}`);
+                                } else {
+                                    console.error(`Error deleting suspect: ${data.error}`);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+                        });
+
+                        cy.remove(selectedNodes);
+                        // Update overall details
+                        document.getElementById('total-suspects').innerText = cy.nodes().length;
+                        document.getElementById('total-connections').innerText = cy.edges().length;
+                    }
+                } else {
+                    alert('Please select a suspect to delete.');
+                }
+            });
+
+            // Suspect detail modal elements
+            var detailModal = document.getElementById('detail-modal');
+            var closeDetailBtn = document.getElementById('close-detail-modal');
+
+            // Node selection and detail display
+            cy.on('tap', 'node', function(evt){
+                var node = evt.target;
+                cy.$('node').unselect();
+                node.select();
+
+                // Display suspect details in the detail modal
+                var data = node.data();
+                document.getElementById('detail-id').innerText = data.id || 'N/A';
+                document.getElementById('detail-fullname').innerText = data.label || 'N/A';
+                document.getElementById('detail-email').innerText = data.email || 'N/A';
+                document.getElementById('detail-nic').innerText = data.nic || 'N/A';
+                document.getElementById('detail-socialmedia').innerText = data.socialMedia || 'N/A';
+                detailModal.style.display = 'block';
+            });
+
+            // Close detail modal
+            closeDetailBtn.addEventListener('click', function() {
+                detailModal.style.display = 'none';
+            });
+
+            // Deselect node when clicking on empty space
+            cy.on('tap', function(event){
+                if (event.target === cy) {
+                    cy.$('node').unselect();
+                }
+            });
+
+            // Update total connections when edges change
+            cy.on('add remove', 'edge', function() {
+                document.getElementById('total-connections').innerText = cy.edges().length;
+            });
+
+            // Add Connection functionality
+            document.getElementById('add-connection').addEventListener('click', function() {
+                var selectedNodes = cy.$('node:selected');
+                if (selectedNodes.length === 2) {
+                    var source = selectedNodes[0].id();
+                    var target = selectedNodes[1].id();
+
+                    // Send POST request to backend to add connection
+                    fetch('/api/add-connection', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ source: source, target: target })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Add edge to the graph
+                            cy.add({
+                                group: 'edges',
+                                data: { source: source, target: target }
+                            });
+                            cy.layout({ name: 'cose', padding: 10 }).run();
+                            // Update total connections
+                            document.getElementById('total-connections').innerText = cy.edges().length;
+                        } else {
+                            alert(`Error: ${data.error}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while adding the connection.');
+                    });
+                } else {
+                    alert('Please select exactly two suspects to create a connection.');
+                }
+            });
+
+            // Tool Buttons Functionality
+            // Define the currently selected suspect
+            var selectedSuspect = null;
+
+            cy.on('select', 'node', function(evt){
+                var node = evt.target;
+                selectedSuspect = node.data();
+            });
+
+            cy.on('unselect', 'node', function(evt){
+                selectedSuspect = null;
+            });
+
+            // Web Scraping Tool
+            document.getElementById('web-scraping').addEventListener('click', function() {
+                if (selectedSuspect) {
+                    // Send request to backend to perform web scraping
+                    fetch('/api/scrape-web', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ suspect_name: selectedSuspect.label })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert(`Web scraping initiated for ${selectedSuspect.label}.`);
+                            apiRequestCount += 1;
+                            document.getElementById('api-requests').innerText = apiRequestCount;
+                        } else {
+                            alert(`Error: ${data.error}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while initiating web scraping.');
+                    });
+                } else {
+                    alert('Please select a suspect to perform web scraping.');
+                }
+            });
+
+            // API Integration Tool
+            document.getElementById('api-integration').addEventListener('click', function() {
+                if (selectedSuspect) {
+                    // Send request to backend to perform API integration
+                    fetch('/api/api-integration', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ suspect_name: selectedSuspect.label })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert(`API integration initiated for ${selectedSuspect.label}.`);
+                            apiRequestCount += 1;
+                            document.getElementById('api-requests').innerText = apiRequestCount;
+                        } else {
+                            alert(`Error: ${data.error}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while initiating API integration.');
+                    });
+                } else {
+                    alert('Please select a suspect to perform API integration.');
+                }
+            });
+
+            // Social Media Scraping Tool
+            document.getElementById('social-media-scraping').addEventListener('click', function() {
+                if (selectedSuspect) {
+                    // Send request to backend to perform social media scraping
+                    fetch('/api/social-media-scraping', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ suspect_name: selectedSuspect.label })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert(`Social media scraping initiated for ${selectedSuspect.label}.`);
+                            apiRequestCount += 1;
+                            document.getElementById('api-requests').innerText = apiRequestCount;
+                        } else {
+                            alert(`Error: ${data.error}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while initiating social media scraping.');
+                    });
+                } else {
+                    alert('Please select a suspect to perform social media scraping.');
+                }
+            });
+
+            // Dork Suspect Button Functionality
+            document.getElementById('dork-suspect').addEventListener('click', function() {
+                if (selectedSuspect) {
+                    // Open the dork modal to choose options
+                    dorkModal.style.display = 'block';
+                } else {
+                    alert('Please select a suspect to continue.');
+                }
+            });
+
+            // Modal elements for Dork Suspect
+            var dorkModal = document.getElementById('dork-modal');
+            var dorkForm = document.getElementById('dork-form');
+            var dorkCancelBtn = document.getElementById('dork-cancel-button');
+
+            // Handle Dork Suspect form submission
+            dorkForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                var searchAll = document.getElementById('search-all').value;
+                var searchEngines = [];
+                if (document.getElementById('google').checked) {
+                    searchEngines.push('google');
+                }
+                if (document.getElementById('bing').checked) {
+                    searchEngines.push('bing');
+                }
+
+                if (searchEngines.length === 0) {
+                    alert('Please select at least one search engine.');
+                    return;
+                }
+
+                var dorkData = {
+                    suspect_name: selectedSuspect.label,
+                    search_all: searchAll === 'yes',
+                    search_engines: searchEngines
+                };
+
+                // Send POST request to dork-suspect endpoint
+                fetch('/api/dork-suspect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dorkData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert(`Dorking initiated for ${selectedSuspect.label}.`);
+                        apiRequestCount += 1;
+                        document.getElementById('api-requests').innerText = apiRequestCount;
+                    } else if (data.status === 'exists') {
+                        // Suspect already scraped, prompt user
+                        openExistingSuspectModal(data.suspect_name);
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while initiating dorking.');
+                });
+
+                // Close the modal
+                dorkModal.style.display = 'none';
+                dorkForm.reset();
+            });
+
+            // Close Dork Modal on 'Cancel'
+            dorkCancelBtn.addEventListener('click', function() {
+                dorkModal.style.display = 'none';
+                dorkForm.reset();
+            });
+
+            // Modal for Existing Suspect
+            var existingSuspectModal = document.getElementById('existing-suspect-modal');
+            var useExistingBtn = document.getElementById('use-existing');
+            var scrapeAgainBtn = document.getElementById('scrape-again');
+
+            function openExistingSuspectModal(suspectName) {
+                existingSuspectModal.style.display = 'block';
+                document.getElementById('existing-suspect-name').innerText = suspectName;
+                existingSuspectName = suspectName; // Store the suspect name
+            }
+
+            useExistingBtn.addEventListener('click', function() {
+                existingSuspectModal.style.display = 'none';
+                // Fetch and visualize existing data using existingSuspectName
+                fetch(`/api/get-results?suspect_name=${encodeURIComponent(existingSuspectName)}`)
+                .then(response => response.json())
+                .then(resultsData => {
+                    // Handle the results
+                    if (resultsData.status === 'success') {
+                        // Add nodes and edges based on resultsData
+                        resultsData.nodes.forEach(node => {
+                            cy.add({
+                                group: 'nodes',
+                                data: {
+                                    id: node.id,
+                                    label: node.label,
+                                    email: node.email || '',
+                                    nic: node.nic || '',
+                                    socialMedia: node.socialMedia || ''
+                                }
+                            });
+                        });
+                        resultsData.edges.forEach(edge => {
+                            cy.add({
+                                group: 'edges',
+                                data: { source: edge.source, target: edge.target }
+                            });
+                        });
+                        cy.layout({ name: 'cose', padding: 10 }).run();
+                        alert(`Loaded existing data for ${existingSuspectName}.`);
+                        // Update counts
+                        document.getElementById('total-suspects').innerText = cy.nodes().length;
+                        document.getElementById('total-connections').innerText = cy.edges().length;
+                    } else {
+                        alert(`Error: ${resultsData.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching existing data:', error);
+                    alert('An error occurred while fetching existing data.');
+                });
+            });
+
+            scrapeAgainBtn.addEventListener('click', function() {
+                existingSuspectModal.style.display = 'none';
+                // Initiate scraping again using existingSuspectName
+                fetch('/api/dork-suspect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        suspect_name: existingSuspectName,
+                        search_all: true, // Modify based on user choice if needed
+                        search_engines: ['google', 'bing'] // Modify based on user choice if needed
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert(`Dorking initiated again for ${existingSuspectName}.`);
+                        apiRequestCount += 1;
+                        document.getElementById('api-requests').innerText = apiRequestCount;
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while initiating dorking.');
+                });
+            });
+
+            // Profile icon functionality
+            var profileIcon = document.getElementById('profile-icon');
+            var accountModal = document.getElementById('account-modal');
+            var logoutButtonModal = document.getElementById('logout-button-modal');
+
+            profileIcon.addEventListener('click', function() {
+                accountModal.style.display = 'block';
+            });
+
+            logoutButtonModal.addEventListener('click', function() {
+                accountModal.style.display = 'none';
+                alert('Logged out successfully.');
+                // Implement actual logout functionality here
+            });
+
+            // Close modals when clicking outside of the content
+            window.onclick = function(event) {
+                if (event.target == addModal) {
+                    addModal.style.display = 'none';
+                    form.reset();
+                }
+                if (event.target == detailModal) {
+                    detailModal.style.display = 'none';
+                }
+                if (event.target == accountModal) {
+                    accountModal.style.display = 'none';
+                }
+                if (event.target == dorkModal) {
+                    dorkModal.style.display = 'none';
+                    dorkForm.reset();
+                }
+                if (event.target == existingSuspectModal) {
+                    existingSuspectModal.style.display = 'none';
+                }
+            };
+        });
+    </script>
+</body>
+</html>
