@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta and Title -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Suspect Visualization - Authentication</title>
+    <!-- External Libraries -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+        /* General styles */
+        body {
+            margin: 0;
+            font-family: 'Ubuntu', sans-serif;
+            background: linear-gradient(135deg, #1e2a38, #3a4a5b);
+            color: #ffffff;
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        /* Authentication container */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-box {
+            background-color: rgba(43, 58, 75, 0.95);
+            padding: 50px 40px;
+            border-radius: 15px;
+            width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            transform: translateY(-50px);
+            animation: slideDown 0.5s forwards;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            to { transform: translateY(0); }
+        }
+
+        .auth-box h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #58a6ff;
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+
+        .auth-box label {
+            display: block;
+            margin-bottom: 16px; /* Increased gap */
+            font-weight: 500;
+        }
+
+        .auth-box .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .auth-box input {
+            width: 100%;
+            padding: 14px 45px 14px 15px;
+            background-color: rgba(30, 42, 56, 0.8);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .auth-box input:focus {
+            background-color: rgba(30, 42, 56, 1);
+            outline: none;
+            transform: scale(1.02);
+        }
+
+        /* Toggle Password Icon */
+        .auth-box .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #ffffff;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .auth-box .toggle-password:hover {
+            opacity: 1;
+        }
+
+        /* Button Styles */
+        .auth-box button,
+        .modal-content button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(45deg, #58a6ff, #4178a8);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.3s, background 0.3s;
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            margin-top: 10px;
+        }
+
+        .auth-box button:hover,
+        .modal-content button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            background: linear-gradient(45deg, #4178a8, #58a6ff);
+        }
+
+        /* Toggle Links */
+        .auth-box .toggle-link,
+        .modal-content .toggle-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .auth-box .toggle-link a,
+        .modal-content .toggle-link a {
+            color: #58a6ff;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .auth-box .toggle-link a:hover,
+        .modal-content .toggle-link a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        /* Message styles */
+        .message {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .message.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .message.success {
+            background-color: rgba(40, 167, 69, 0.9);
+            color: #ffffff;
+        }
+
+        .message.error {
+            background-color: rgba(220, 53, 69, 0.9);
+            color: #ffffff;
+        }
+
+        /* Background animation */
+        .background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .background::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0) 30%, rgba(30, 42, 56, 0.8) 70%);
+            pointer-events: none;
+        }
+
+        .background i {
+            position: absolute;
+            display: block;
+            color: rgba(255, 255, 255, 0.2);
+            animation: floatUp 15s linear infinite;
+            bottom: -50px;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-110vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 2; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: rgba(43, 58, 75, 0.95);
+            margin: 10% auto; /* 10% from the top and centered */
+            padding: 30px 25px;
+            border: none;
+            width: 400px; /* Could be more or less, depending on screen size */
+            border-radius: 15px;
+            position: relative;
+            animation: slideIn 0.5s;
+            transition: background-color 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-modal {
+            color: #aaaaaa;
+            float: right;
+            font-size: 26px;
+            font-weight: bold;
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover,
+        .close-modal:focus {
+            color: #ffffff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Reset Modal Specific Styles */
+        .reset-modal-content label {
+            display: block;
+            margin-bottom: 16px; /* Increased gap */
+            font-weight: 500;
+        }
+
+        .reset-modal-content input {
+            width: 100%;
+            padding: 14px 45px 14px 15px;
+            background-color: rgba(30, 42, 56, 0.8);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .reset-modal-content input:focus {
+            background-color: rgba(30, 42, 56, 1);
+            outline: none;
+            transform: scale(1.02);
+        }
+
+        /* Main Application */
+        #app .auth-box {
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        #app button {
+            background: linear-gradient(45deg, #ff7e5f, #feb47b);
+            transition: transform 0.2s, box-shadow 0.3s, background 0.3s;
+        }
+
+        #app button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            background: linear-gradient(45deg, #feb47b, #ff7e5f);
+        }
+
+        /* Responsive */
+        @media (max-width: 450px) {
+            .auth-box, .modal-content {
+                width: 90%;
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background animation -->
+    <div class="background">
+        <!-- Icons will be added dynamically -->
+    </div>
+
+    <!-- Login Page -->
+    <div id="login-page" class="auth-container">
+        <div class="auth-box login-box">
+            <h2>Login</h2>
+            <div id="login-message" class="message"></div>
+            <form id="login-form">
+                <label for="login-email">Email:</label>
+                <input type="email" id="login-email" name="login-email" required />
+
+                <label for="login-password">Password:</label>
+                <div class="input-group">
+                    <input type="password" id="login-password" name="login-password" required />
+                    <i class="fas fa-eye toggle-password" toggle="#login-password"></i>
+                </div>
+
+                <button type="submit">Login</button>
+            </form>
+            <div class="toggle-link">
+                Don't have an account? <a id="show-signup">Sign up here</a>
+            </div>
+            <div class="toggle-link">
+                Forgot your password? <a id="show-reset">Reset here</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Page -->
+    <div id="signup-page" class="auth-container" style="display: none;">
+        <div class="auth-box signup-box">
+            <h2>Sign Up</h2>
+            <div id="signup-message" class="message"></div> <!-- Message Container -->
+            <form id="signup-form">
+                <label for="signup-email">Email:</label>
+                <input type="email" id="signup-email" name="signup-email" required />
+
+                <label for="signup-password">Password:</label>
+                <div class="input-group">
+                    <input type="password" id="signup-password" name="signup-password" required />
+                    <i class="fas fa-eye toggle-password" toggle="#signup-password"></i>
+                </div>
+
+                <label for="signup-confirm-password">Confirm Password:</label>
+                <div class="input-group">
+                    <input type="password" id="signup-confirm-password" name="signup-confirm-password" required />
+                    <i class="fas fa-eye toggle-password" toggle="#signup-confirm-password"></i>
+                </div>
+
+                <button type="submit">Sign Up</button>
+            </form>
+            <div class="toggle-link">
+                Already have an account? <a id="show-login">Login here</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Reset Modal -->
+    <div id="reset-modal" class="modal">
+        <div class="modal-content reset-modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Reset Password</h2>
+            <div id="reset-message" class="message"></div>
+            <form id="reset-form">
+                <label for="reset-email">Enter your email:</label>
+                <input type="email" id="reset-email" name="reset-email" required />
+
+                <button type="submit">Send Reset Email</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application (Initially Hidden) -->
+    <div id="app" style="display: none;">
+        <div class="auth-container">
+            <div class="auth-box">
+                <h2>Welcome</h2>
+                <p id="welcome-message">You are logged in.</p>
+                <button id="logout-button">Logout</button>
+            </div>
+        </div>
+        <!-- Include your existing HTML code here -->
+    </div>
+
+    <!-- Scripts -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            onAuthStateChanged, 
+            signOut,
+            sendEmailVerification,
+            sendPasswordResetEmail,
+            fetchSignInMethodsForEmail
+        } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID",
+            measurementId: "YOUR_MEASUREMENT_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        const loginPage = document.getElementById('login-page');
+        const signupPage = document.getElementById('signup-page');
+        const appPage = document.getElementById('app');
+        const showSignup = document.getElementById('show-signup');
+        const showLogin = document.getElementById('show-login');
+        const showReset = document.getElementById('show-reset');
+
+        const resetModal = document.getElementById('reset-modal');
+        const closeModal = document.querySelector('.close-modal');
+
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const resetForm = document.getElementById('reset-form');
+
+        const loginMessage = document.getElementById('login-message');
+        const signupMessage = document.getElementById('signup-message');
+        const resetMessage = document.getElementById('reset-message');
+
+        const logoutButton = document.getElementById('logout-button');
+        const welcomeMessage = document.getElementById('welcome-message');
+
+        // Error Messages Mapping
+        const errorMessages = {
+            'auth/invalid-email': 'The email address is not valid.',
+            'auth/user-disabled': 'This user has been disabled.',
+            'auth/user-not-found': 'No user found with this email.',
+            'auth/wrong-password': 'Incorrect password. Please try again.',
+            'auth/too-many-requests': 'Too many attempts. Please try again later.',
+            // Add more mappings as needed
+        };
+
+        // Show Signup Page
+        showSignup.addEventListener('click', function(e) {
+            e.preventDefault();
+            loginPage.style.display = 'none';
+            signupPage.style.display = 'flex';
+            clearMessages();
+            animateTransition(loginPage, signupPage);
+        });
+
+        // Show Login Page
+        showLogin.addEventListener('click', function(e) {
+            e.preventDefault();
+            signupPage.style.display = 'none';
+            loginPage.style.display = 'flex';
+            clearMessages();
+            animateTransition(signupPage, loginPage);
+        });
+
+        // Show Reset Modal
+        showReset.addEventListener('click', function(e) {
+            e.preventDefault();
+            resetModal.style.display = 'block';
+            clearMessages();
+        });
+
+        // Close Reset Modal
+        closeModal.addEventListener('click', function() {
+            resetModal.style.display = 'none';
+            resetForm.reset();
+            resetMessage.classList.remove('show');
+        });
+
+        // Close Modal when clicking outside of it
+        window.addEventListener('click', function(event) {
+            if (event.target == resetModal) {
+                resetModal.style.display = 'none';
+                resetForm.reset();
+                resetMessage.classList.remove('show');
+            }
+        });
+
+        // Handle Signup Form Submission
+        signupForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            clearMessages();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm-password').value;
+
+            if (password !== confirmPassword) {
+                displayMessage(signupMessage, 'error', 'Passwords do not match.');
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                console.log("User signed up:", user);
+
+                // Send Email Verification
+                await sendEmailVerification(user);
+                console.log("Email verification sent.");
+
+                // Create User Document in Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    email: email,
+                    createdAt: serverTimestamp()
+                });
+                console.log("User document created in Firestore.");
+
+                // Display Success Message
+                displayMessage(signupMessage, 'success', 'Signup successful! A verification email has been sent to your email address. Please check your inbox and verify your email.');
+
+                await signOut(auth);
+                signupForm.reset();
+            } catch (error) {
+                console.error("Signup Error Code:", error.code);
+                console.error("Signup Error Message:", error.message);
+                const friendlyMessage = errorMessages[error.code] || 'Signup failed. Please try again.';
+                displayMessage(signupMessage, 'error', friendlyMessage);
+            }
+        });
+
+        
+
+        // Handle Login Form Submission
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            clearMessages();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                console.log("User signed in:", userCredential.user);
+
+                if (userCredential.user.emailVerified) {
+                    // Login successful and email verified
+                    loginForm.reset();
+                } else {
+                    displayMessage(loginMessage, 'error', 'Please verify your email before logging in.');
+                    await signOut(auth);
+                }
+            } catch (error) {
+                console.error("Login Error Code:", error.code);
+                console.error("Login Error Message:", error.message);
+                const friendlyMessage = errorMessages[error.code] || 'Login failed. Please try again.';
+                displayMessage(loginMessage, 'error', friendlyMessage);
+            }
+        });
+
+        // Handle Logout
+        logoutButton?.addEventListener('click', async function() {
+            try {
+                await signOut(auth);
+                alert('Logged out successfully.');
+            } catch (error) {
+                alert('Error logging out: ' + error.message);
+            }
+        });
+
+        // Handle Password Reset Form Submission
+        resetForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            resetMessage.classList.remove('show');
+            const email = document.getElementById('reset-email').value.trim();
+
+            if (!email) {
+                displayMessage(resetMessage, 'error', 'Please enter your email.');
+                return;
+            }
+
+            try {
+                // Send password reset email directly
+                await sendPasswordResetEmail(auth, email);
+                console.log("Password reset email sent to:", email);
+                displayMessage(resetMessage, 'success', 'Password reset email sent! Please check your inbox.');
+                resetForm.reset();
+            } catch (error) {
+                console.error("Password Reset Error Code:", error.code);
+                console.error("Password Reset Error Message:", error.message);
+                if (error.code === 'auth/user-not-found') {
+                    displayMessage(resetMessage, 'error', 'No user found with this email.');
+                } else if (error.code === 'auth/invalid-email') {
+                    displayMessage(resetMessage, 'error', 'The email address is not valid.');
+                } else {
+                    const friendlyMessage = errorMessages[error.code] || 'Error sending password reset email. Please try again.';
+                    displayMessage(resetMessage, 'error', friendlyMessage);
+                }
+            }
+        });
+
+        // Listen for Authentication State Changes
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // User is signed in
+                console.log('User signed in:', user.email);
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const docSnap = await getDoc(userDocRef);
+                    if (docSnap.exists()) {
+                        const userData = docSnap.data();
+                        console.log("User Data:", userData);
+                        // Update the main application UI with user data
+                        welcomeMessage.innerHTML = `
+                            Welcome, <strong>${userData.email}</strong><br>
+                            Account created on: ${userData.createdAt?.toDate()?.toLocaleDateString() || 'N/A'}
+                        `;
+                        // Show the main application
+                        appPage.style.display = 'block';
+                        // Hide the auth containers
+                        loginPage.style.display = 'none';
+                        signupPage.style.display = 'none';
+                        resetModal.style.display = 'none';
+                    } else {
+                        console.log("No such document!");
+                        displayMessage(loginMessage, 'error', 'No user data found.');
+                        await signOut(auth);
+                    }
+                } catch (error) {
+                    console.error("Error getting document:", error);
+                    displayMessage(loginMessage, 'error', 'Error retrieving user data.');
+                }
+            } else {
+                // No user is signed in
+                console.log('No user signed in.');
+                // Show the login page by default
+                appPage.style.display = 'none';
+                loginPage.style.display = 'flex';
+            }
+        });
+
+        // Function to Display Messages
+        function displayMessage(element, type, message) {
+            element.className = 'message ' + type;
+            element.textContent = message;
+            element.classList.add('show');
+            setTimeout(() => {
+                element.classList.remove('show');
+            }, 5000); // Hide after 5 seconds
+        }
+
+        // Function to Clear All Messages
+        function clearMessages() {
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(msg => {
+                msg.classList.remove('show');
+                msg.textContent = '';
+            });
+        }
+
+        // Toggle Password Visibility
+        const togglePasswordIcons = document.querySelectorAll('.toggle-password');
+        togglePasswordIcons.forEach(icon => {
+            icon.addEventListener('click', function() {
+                const inputSelector = this.getAttribute('toggle');
+                const input = document.querySelector(inputSelector);
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.classList.remove('fa-eye');
+                    this.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    this.classList.remove('fa-eye-slash');
+                    this.classList.add('fa-eye');
+                }
+            });
+        });
+
+        // OSINT-related icons animation
+        const icons = ['fa-search', 'fa-shield-alt', 'fa-user-secret', 'fa-fingerprint', 'fa-database', 'fa-network-wired', 'fa-code', 'fa-globe'];
+        const background = document.querySelector('.background');
+        for(let i = 0; i < 50; i++) {
+            const icon = document.createElement('i');
+            icon.className = 'fas ' + icons[Math.floor(Math.random() * icons.length)];
+            icon.style.left = Math.random() * 100 + 'vw';
+            icon.style.animationDelay = Math.random() * 15 + 's';
+            icon.style.fontSize = Math.random() * 24 + 10 + 'px';
+            background.appendChild(icon);
+        }
+
+        // Function for form transitions
+        function animateTransition(fromElement, toElement) {
+            fromElement.classList.add('fade-out');
+            toElement.classList.add('fade-in');
+            setTimeout(() => {
+                fromElement.classList.remove('fade-out');
+                toElement.classList.remove('fade-in');
+            }, 500);
+        }
+    </script>
+</body>
+</html>
