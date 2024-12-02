@@ -1,3 +1,4 @@
+# routes.py
 from flask import Blueprint, request, jsonify, send_file
 from app.services.dorking import (
     generate_name_variants,
@@ -13,15 +14,13 @@ import os
 import re
 import json
 import shutil
+import threading
+import uuid
 
 api = Blueprint('api', __name__)
 
 @api.route('/add-suspect', methods=['POST'])
 def add_suspect():
-    """
-    API endpoint to add a suspect.
-    Expects JSON payload with 'suspect_name' and optional 'email', 'nic', 'social_media'.
-    """
     try:
         data = request.json
         suspect_name = data.get('suspect_name')
@@ -32,19 +31,18 @@ def add_suspect():
         if not suspect_name:
             return jsonify({"status": "error", "error": "Suspect name is required."}), 400
 
-        # Check if suspect already exists
-        sanitized_name = re.sub(r'[<>:"/\\|?*]', '_', suspect_name)
-        suspect_folder = os.path.join('suspects', sanitized_name)
+        # Generate unique suspect ID
+        suspect_id = str(uuid.uuid4())
+
+        suspect_folder = os.path.join('suspects', suspect_id)
 
         if os.path.exists(suspect_folder):
-            # Suspect already exists
-            return jsonify({"status": "exists", "message": "Suspect already exists.", "suspect_name": suspect_name}), 200
+            return jsonify({"status": "exists", "message": "Suspect already exists.", "suspect_id": suspect_id}), 200
 
-        # Create suspect folder and subfolders
-        create_suspect_folder(suspect_name)
+        create_suspect_folder(suspect_id)
 
-        # Save suspect details to a JSON file
         suspect_details = {
+            "id": suspect_id,
             "name": suspect_name,
             "email": email,
             "nic": nic,
@@ -54,14 +52,9 @@ def add_suspect():
         with open(details_file, 'w', encoding='utf-8') as f:
             json.dump(suspect_details, f, ensure_ascii=False, indent=4)
 
-        # Optionally, add to cache
         cache = load_cache(suspect_folder)
         save_cache(suspect_folder, cache)
 
-        # Use sanitized_name as suspect_id for consistency
-        suspect_id = sanitized_name
-
-        # Return success response with suspect_id
         return jsonify({"status": "success", "message": f"Suspect '{suspect_name}' added successfully.", "suspect_id": suspect_id}), 200
 
     except Exception as e:
@@ -69,117 +62,63 @@ def add_suspect():
 
 @api.route('/delete-suspect', methods=['DELETE'])
 def delete_suspect():
-    """
-    API endpoint to delete a suspect.
-    Expects JSON payload with 'suspect_name'.
-    """
     try:
         data = request.json
-        suspect_name = data.get('suspect_name')
+        suspect_id = data.get('suspect_id')
 
-        if not suspect_name:
-            return jsonify({"status": "error", "error": "Suspect name is required."}), 400
+        if not suspect_id:
+            return jsonify({"status": "error", "error": "Suspect ID is required."}), 400
 
-        # Sanitize suspect name
-        sanitized_name = re.sub(r'[<>:"/\\|?*]', '_', suspect_name)
-        suspect_folder = os.path.join('suspects', sanitized_name)
+        suspect_folder = os.path.join('suspects', suspect_id)
 
         if not os.path.exists(suspect_folder):
             return jsonify({"status": "error", "error": "Suspect not found."}), 404
 
-        # Remove the suspect folder and all its contents
         shutil.rmtree(suspect_folder)
 
-        # Optionally, remove connections related to this suspect
         connections_file = os.path.join('connections.json')
         if os.path.exists(connections_file):
             with open(connections_file, 'r', encoding='utf-8') as f:
                 connections = json.load(f)
-            # Remove connections where source or target is the suspect
-            updated_connections = [conn for conn in connections if conn['source'] != sanitized_name and conn['target'] != sanitized_name]
+            updated_connections = [conn for conn in connections if conn['source'] != suspect_id and conn['target'] != suspect_id]
             with open(connections_file, 'w', encoding='utf-8') as f:
                 json.dump(updated_connections, f, ensure_ascii=False, indent=4)
 
-        return jsonify({"status": "success", "message": f"Suspect '{suspect_name}' deleted successfully."}), 200
+        return jsonify({"status": "success", "message": f"Suspect with ID '{suspect_id}' deleted successfully."}), 200
 
     except Exception as e:
         return jsonify({"status": "error", "error": str(e)}), 500
 
 @api.route('/add-connection', methods=['POST'])
 def add_connection():
-    """
-    API endpoint to add a connection between two suspects.
-    Expects JSON payload with 'source' and 'target'.
-    """
     try:
         data = request.json
-        source = data.get('source')
-        target = data.get('target')
+        source_id = data.get('source_id')
+        target_id = data.get('target_id')
 
-        if not source or not target:
-            return jsonify({"status": "error", "error": "Source and target are required."}), 400
+        if not source_id or not target_id:
+            return jsonify({"status": "error", "error": "Source and target IDs are required."}), 400
 
-        if source == target:
+        if source_id == target_id:
             return jsonify({"status": "error", "error": "Source and target cannot be the same."}), 400
 
-        # Define the connections file path
         connections_file = os.path.join('connections.json')
 
-        # Load existing connections
         if os.path.exists(connections_file):
             with open(connections_file, 'r', encoding='utf-8') as f:
                 connections = json.load(f)
         else:
             connections = []
 
-        # Check if the connection already exists
-        if {"source": source, "target": target} in connections or {"source": target, "target": source} in connections:
+        if {"source": source_id, "target": target_id} in connections or {"source": target_id, "target": source_id} in connections:
             return jsonify({"status": "error", "error": "Connection already exists."}), 400
 
-        # Add the new connection
-        connections.append({"source": source, "target": target})
+        connections.append({"source": source_id, "target": target_id})
 
-        # Save back to the connections file
         with open(connections_file, 'w', encoding='utf-8') as f:
             json.dump(connections, f, ensure_ascii=False, indent=4)
 
-        return jsonify({"status": "success", "message": f"Connection added between '{source}' and '{target}'."}), 200
-
-    except Exception as e:
-        return jsonify({"status": "error", "error": str(e)}), 500
-
-@api.route('/dork-suspect', methods=['POST'])
-def dork_suspect():
-    """
-    API endpoint to perform dorking (scraping) for a suspect.
-    Expects JSON payload with 'suspect_name', 'search_all', 'search_engines'.
-    """
-    try:
-        data = request.json
-        suspect_name = data.get('suspect_name')
-        search_all = data.get('search_all', False)
-        search_engines = data.get('search_engines', [])
-
-        if not suspect_name:
-            return jsonify({"status": "error", "error": "Suspect name is required."}), 400
-
-        # Check if suspect exists
-        sanitized_name = re.sub(r'[<>:"/\\|?*]', '_', suspect_name)
-        suspect_folder = os.path.join('suspects', sanitized_name)
-
-        if not os.path.exists(suspect_folder):
-            return jsonify({"status": "error", "error": "Suspect not found. Please add the suspect first."}), 404
-
-        # Check if results already exist
-        results_file = os.path.join(suspect_folder, 'results.json')
-        if os.path.exists(results_file):
-            # Suspect has already been scraped
-            return jsonify({"status": "exists", "message": "Suspect has already been scraped.", "suspect_name": suspect_name}), 200
-
-        # Perform scraping based on options
-        perform_dorking(suspect_name, search_all, search_engines)
-
-        return jsonify({"status": "success", "message": f"Dorking initiated for {suspect_name}."}), 200
+        return jsonify({"status": "success", "message": f"Connection added between '{source_id}' and '{target_id}'."}), 200
 
     except Exception as e:
         return jsonify({"status": "error", "error": str(e)}), 500
@@ -187,21 +126,53 @@ def dork_suspect():
 @api.route('/get-results', methods=['GET'])
 def get_results():
     try:
-        suspect_name = request.args.get('suspect_name')
-        if not suspect_name:
-            return jsonify({"status": "error", "error": "Suspect name is required."}), 400
+        suspect_id = request.args.get('suspect_id')
+        if not suspect_id:
+            return jsonify({"status": "error", "error": "Suspect ID is required."}), 400
 
-        sanitized_name = re.sub(r'[<>:"/\\|?*]', '_', suspect_name)
-        suspect_folder = os.path.join('suspects', sanitized_name)
+        suspect_folder = os.path.join('suspects', suspect_id)
         results_file = os.path.join(suspect_folder, 'results.json')
 
         if not os.path.exists(results_file):
             return jsonify({"status": "error", "error": "Results not found for the given suspect."}), 404
 
-        with open(results_file, 'r', encoding='utf-8') as f:
-            results_data = json.load(f)
+        try:
+            with open(results_file, 'r', encoding='utf-8') as f:
+                results_data = json.load(f)
+        except json.JSONDecodeError:
+            return jsonify({"status": "error", "error": "Results file is corrupted."}), 500
 
         return jsonify({"status": "success", "data": results_data}), 200
+
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+@api.route('/dork-suspect', methods=['POST'])
+def dork_suspect():
+    try:
+        data = request.json
+        suspect_id = data.get('suspect_id')
+        search_all = data.get('search_all', False)
+        search_engines = data.get('search_engines', [])
+
+        if not suspect_id:
+            return jsonify({"status": "error", "error": "Suspect ID is required."}), 400
+
+        suspect_folder = os.path.join('suspects', suspect_id)
+
+        if not os.path.exists(suspect_folder):
+            return jsonify({"status": "error", "error": "Suspect not found. Please add the suspect first."}), 404
+
+        def run_dorking():
+            try:
+                perform_dorking(suspect_id, search_all, search_engines)
+            except Exception as e:
+                print(f"Error during dorking for {suspect_id}: {e}")
+
+        dorking_thread = threading.Thread(target=run_dorking, daemon=True)
+        dorking_thread.start()
+
+        return jsonify({"status": "success", "message": f"Dorking initiated for suspect ID {suspect_id}."}), 200
 
     except Exception as e:
         return jsonify({"status": "error", "error": str(e)}), 500
@@ -210,21 +181,41 @@ def get_results():
 def download_results():
     """
     API endpoint to download the results.json file for a suspect.
-    Expects query parameter 'suspect_name'.
+    Expects query parameter 'suspect_id'.
     """
     try:
-        suspect_name = request.args.get('suspect_name')
-        if not suspect_name:
-            return jsonify({"status": "error", "error": "Suspect name is required."}), 400
+        suspect_id = request.args.get('suspect_id')
+        if not suspect_id:
+            return jsonify({"status": "error", "error": "Suspect ID is required."}), 400
 
-        sanitized_name = re.sub(r'[<>:"/\\|?*]', '_', suspect_name)
-        suspect_folder = os.path.join('suspects', sanitized_name)
+        suspect_folder = os.path.join('suspects', suspect_id)
         results_file = os.path.join(suspect_folder, 'results.json')
 
         if not os.path.exists(results_file):
             return jsonify({"status": "error", "error": "Results not found for the given suspect."}), 404
 
         return send_file(results_file, as_attachment=True)
+
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+@api.route('/get-suspect', methods=['GET'])
+def get_suspect():
+    try:
+        suspect_id = request.args.get('suspect_id')
+        if not suspect_id:
+            return jsonify({"status": "error", "error": "Suspect ID is required."}), 400
+
+        suspect_folder = os.path.join('suspects', suspect_id)
+        details_file = os.path.join(suspect_folder, 'details.json')
+
+        if not os.path.exists(details_file):
+            return jsonify({"status": "error", "error": "Suspect not found."}), 404
+
+        with open(details_file, 'r', encoding='utf-8') as f:
+            suspect_details = json.load(f)
+
+        return jsonify({"status": "success", "data": suspect_details}), 200
 
     except Exception as e:
         return jsonify({"status": "error", "error": str(e)}), 500

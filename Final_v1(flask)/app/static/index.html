@@ -60,7 +60,6 @@
         /* Main content styles */
         .main-content {
             flex-grow: 1;
-            background-color: #1e2a38;
             display: flex;
             flex-direction: column;
         }
@@ -426,6 +425,56 @@
         #image-preview-content .close-btn button:hover {
             opacity: 0.8;
         }
+
+        /* Custom Context Menu Styles */
+        #context-menu {
+            display: none;
+            position: absolute;
+            z-index: 10000;
+            width: 150px;
+            background-color: #2b3a4b;
+            border: 1px solid #555;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+
+        #context-menu ul {
+            list-style: none;
+            padding: 5px 0;
+            margin: 0;
+        }
+
+        #context-menu ul li {
+            padding: 8px 12px;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        #context-menu ul li:hover {
+            background-color: #32495b;
+        }
+        /* Context Menu Styles */
+        #context-menu {
+            display: none;
+            position: absolute;
+            z-index: 1000;
+            width: 150px;
+            background-color: #17264a;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+        }
+        #context-menu ul {
+            list-style: none;
+            padding: 5px 0;
+            margin: 0;
+        }
+        #context-menu ul li {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        #context-menu ul li:hover {
+            background-color: #f0f0f0;
+        }
     </style>
 </head>
 <body>
@@ -483,7 +532,7 @@
                     <button id="web-scraping"><i class="fas fa-globe"></i> Web Scraping</button>
                     <button id="api-integration"><i class="fas fa-plug"></i> API Integration</button>
                     <button id="social-media-scraping"><i class="fas fa-hashtag"></i> Social Media Scraping</button>
-                    <button id="dork-suspect"><i class="fas fa-magnifying-glass"></i> Dork Suspect</button> <!-- New Button -->
+                    <button id="dork-suspect"><i class="fas fa-magnifying-glass"></i> Dork Suspect</button>
                 </div>
             </div>
             <div class="category">
@@ -612,839 +661,1260 @@
             </div>
         </div>
     </div>
-   <!-- ... [Your existing HTML code] ... -->
-<script>
-    // Declare existingSuspectName globally
-    var existingSuspectName = '';
+    <!-- Polling Message -->
+    <div id="polling-message" style="display: none; color: #fff; text-align: center; padding: 10px; background-color: rgba(0, 0, 0, 0.5); position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1003;">
+        Scraping in progress...
+    </div>
 
-    // Toggle tool lists
-    document.querySelectorAll('.tool-panel .category h2').forEach(header => {
-        header.addEventListener('click', () => {
-            const toolList = header.nextElementSibling;
-            toolList.style.display = toolList.style.display === 'block' ? 'none' : 'block';
+    <div id="context-menu">
+        <ul>
+            <li id="context-dorking">Dorking</li>
+            <li id="context-delete">Delete Node</li>
+        </ul>
+    </div>
+
+    <script>
+        // Declare existingSuspectName globally
+        var existingSuspectName = '';
+        var existingSuspectId = '';
+    
+        // Toggle tool lists
+        document.querySelectorAll('.tool-panel .category h2').forEach(header => {
+            header.addEventListener('click', () => {
+                const toolList = header.nextElementSibling;
+                toolList.style.display = toolList.style.display === 'block' ? 'none' : 'block';
+            });
         });
-    });
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Cytoscape
+            var cy = cytoscape({
+                container: document.getElementById('cy'),
+                style: [
+                    {
+                        selector: 'node[type="method"]',
+                        style: {
+                            'background-color': '#ff5722',
+                            'shape': 'ellipse',
+                            'label': 'data(label)',
+                            'font-size': '14px',
+                            'color': '#fff',
+                            'text-valign': 'center',
+                            'text-halign': 'center'
+                        }
+                    },
+                    {
+                        selector: 'node[type="domain"]',
+                        style: {
+                            'background-color': '#2196f3',
+                            'shape': 'rectangle',
+                            'label': 'data(label)',
+                            'font-size': '12px',
+                            'color': '#fff',
+                            'text-valign': 'center',
+                            'text-halign': 'center'
+                        }
+                    },
+                    {
+                        selector: 'node[type="result"]',
+                        style: {
+                            'background-color': '#4caf50',
+                            'shape': 'diamond',
+                            'label': 'data(label)',
+                            'font-size': '10px',
+                            'color': '#fff',
+                            'text-valign': 'bottom',
+                            'text-halign': 'center'
+                        }
+                    },
+                    {
+                        selector: 'edge[type="method-connection"]',
+                        style: {
+                            'line-color': '#ff5722',
+                            'target-arrow-color': '#ff5722',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier'
+                        }
+                    },
+                    {
+                        selector: 'edge[type="domain-connection"]',
+                        style: {
+                            'line-color': '#2196f3',
+                            'target-arrow-color': '#2196f3',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier'
+                        }
+                    },
+                    {
+                        selector: 'edge[type="result-connection"]',
+                        style: {
+                            'line-color': '#4caf50',
+                            'target-arrow-color': '#4caf50',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier'
+                        }
+                    },
+                    {
+                        selector: 'node[type="suspect"]',
+                        style: {
+                            'width': '50px',
+                            'height': '50px',
+                            'background-color': '#555',
+                            'shape': 'ellipse',
+                            'border-color': '#000',
+                            'border-width': 3,
+                            'content': 'data(label)',
+                            'color': '#fff',
+                            'font-size': '12px',
+                            'text-valign': 'center',
+                            'text-halign': 'center'
+                        }
+                    },
+                    {
+                        selector: 'node[type="source"]',
+                        style: {
+                            'width': '60px',
+                            'height': '60px',
+                            'background-color': '#007bff',
+                            'shape': 'rectangle',
+                            'border-color': '#000',
+                            'border-width': 2,
+                            'content': 'data(label)',
+                            'color': '#fff',
+                            'font-size': '14px',
+                            'text-valign': 'center',
+                            'text-halign': 'center'
+                        }
+                    },
+                    {
+                        selector: 'node[type="result"][category="google_web_pages"]',
+                        style: {
+                            'background-color': '#1f77b4',
+                            'shape': 'ellipse',
+                            'border-color': '#333',
+                            'border-width': 2,
+                            'content': 'data(label)',
+                            'color': '#fff',
+                            'font-size': '10px',
+                            'text-valign': 'bottom',
+                            'text-halign': 'center'
+                        }
+                    },
+                    {
+                        selector: 'node[type="result"][category="google_images"]',
+                        style: {
+                            'background-color': '#ff7f0e',
+                            'shape': 'rectangle',
+                            'border-color': '#333',
+                            'border-width': 2,
+                            'content': 'data(label)',
+                            'color': '#fff',
+                            'font-size': '10px',
+                            'text-valign': 'bottom',
+                            'text-halign': 'center'
+                        }
+                    },
+                    {
+                        selector: 'node[type="result"][category="google_documents"]',
+                        style: {
+                            'background-color': '#2ca02c',
+                            'shape': 'diamond',
+                            'border-color': '#333',
+                            'border-width': 2,
+                            'content': 'data(label)',
+                            'color': '#fff',
+                            'font-size': '10px',
+                            'text-valign': 'bottom',
+                            'text-halign': 'center'
+                        }
+                    },
+                    {
+                        selector: 'node[type="result"][category="bing_web_pages"]',
+                        style: {
+                            'background-color': '#d62728',
+                            'shape': 'triangle',
+                            'border-color': '#333',
+                            'border-width': 2,
+                            'content': 'data(label)',
+                            'color': '#fff',
+                            'font-size': '10px',
+                            'text-valign': 'bottom',
+                            'text-halign': 'center'
+                        }
+                    },
+                    {
+                        selector: 'node[type="result"]',
+                        style: {
+                            'background-color': '#9467bd',
+                            'shape': 'hexagon',
+                            'border-color': '#333',
+                            'border-width': 2,
+                            'content': 'data(label)',
+                            'color': '#fff',
+                            'font-size': '10px',
+                            'text-valign': 'bottom',
+                            'text-halign': 'center'
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 2,
+                            'line-color': '#ccc',
+                            'target-arrow-color': '#ccc',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier'
+                        }
+                    },
+                    {
+                        selector: ':selected',
+                        style: {
+                            'background-color': '#ffa500',
+                            'line-color': '#ffa500',
+                            'target-arrow-color': '#ffa500',
+                            'source-arrow-color': '#ffa500',
+                            'border-width': 2,
+                            'border-color': '#ffffff'
+                        }
+                    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Cytoscape
-        var cy = cytoscape({
-            container: document.getElementById('cy'),
-            style: [
-                {
-                    selector: 'node[type="suspect"]',
-                    style: {
-                        'width': '50px',
-                        'height': '50px',
-                        'background-color': '#555',
-                        'shape': 'ellipse',
-                        'border-color': '#000',
-                        'border-width': 3,
-                        'content': 'data(label)',
-                        'color': '#fff',
-                        'font-size': '12px',
-                        'text-valign': 'center',
-                        'text-halign': 'center'
+                ],
+                elements: [],
+                layout: {
+                    name: 'cose',
+                    padding: 10
+                }
+            });
+    
+            // Initialize API request counter
+            let apiRequestCount = 0;
+    
+            // Modal elements
+            var addModal = document.getElementById('node-modal');
+            var form = document.getElementById('node-form');
+            var nodeCancelBtn = document.getElementById('node-cancel-button');
+    
+            // Context Menu
+            var contextMenu = document.getElementById('context-menu');
+            var contextDorking = document.getElementById('context-dorking');
+            var contextDelete = document.getElementById('context-delete');
+    
+            // Open modal on 'Add Node' click
+            document.getElementById('add-node').addEventListener('click', function() {
+                addModal.style.display = 'block';
+            });
+    
+            // Close node modal on 'Cancel' click
+            nodeCancelBtn.addEventListener('click', function() {
+                addModal.style.display = 'none';
+                form.reset();
+            });
+    
+            // Handle form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+    
+                // Collect form data
+                var fullName = document.getElementById('full-name').value.trim();
+                var email = document.getElementById('email').value.trim();
+                var nic = document.getElementById('nic').value.trim();
+                var socialMedia = document.getElementById('social-media').value.trim();
+    
+                // Prepare data to send
+                var suspectData = {
+                    suspect_name: fullName,
+                    email: email,
+                    nic: nic,
+                    social_media: socialMedia
+                };
+    
+                // Send POST request to add suspect
+                fetch('/api/add-suspect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(suspectData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert(data.message);
+                        apiRequestCount += 1;
+                        document.getElementById('api-requests').innerText = apiRequestCount;
+    
+                        // Add node to the graph using suspect_id as ID
+                        cy.add({
+                            group: 'nodes',
+                            data: {
+                                id: data.suspect_id,
+                                label: fullName,
+                                email: email || '',
+                                nic: nic || '',
+                                socialMedia: socialMedia || '',
+                                type: 'suspect'
+                            }
+                        });
+    
+                        // Refresh layout
+                        cy.layout({ name: 'cose', padding: 10, animate: true }).run();
+    
+                        // Update overall details
+                        document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
+                        document.getElementById('total-connections').innerText = cy.edges().length;
+                    } else if (data.status === 'exists') {
+                        // Suspect already exists
+                        existingSuspectId = data.suspect_id;
+                        openExistingSuspectModal(data.suspect_id, fullName);
+                    } else {
+                        alert(`Error: ${data.error}`);
                     }
-                },
-                {
-                    selector: 'node[type="source"]',
-                    style: {
-                        'width': '60px',
-                        'height': '60px',
-                        'background-color': '#007bff',
-                        'shape': 'rectangle',
-                        'border-color': '#000',
-                        'border-width': 2,
-                        'content': 'data(label)',
-                        'color': '#fff',
-                        'font-size': '14px',
-                        'text-valign': 'center',
-                        'text-halign': 'center'
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while adding the suspect.');
+                });
+    
+                // Close modal and reset form
+                addModal.style.display = 'none';
+                form.reset();
+            });
+    
+            // Delete node functionality
+            document.getElementById('delete-node').addEventListener('click', function() {
+                var selectedNodes = cy.$(':selected');
+                if (selectedNodes.length > 0) {
+                    if (confirm('Are you sure you want to delete the selected suspect(s) and all their connections?')) {
+                        selectedNodes.forEach(node => {
+                            var suspectId = node.id();
+                            // Send DELETE request to backend
+                            fetch('/api/delete-suspect', {
+                                method: 'DELETE',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ suspect_id: suspectId })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    console.log(`Deleted suspect ID: ${suspectId}`);
+                                } else {
+                                    console.error(`Error deleting suspect: ${data.error}`);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+    
+                            // Remove connected edges and node
+                            cy.remove(node);
+                        });
+    
+                        // Update overall details
+                        document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
+                        document.getElementById('total-connections').innerText = cy.edges().length;
                     }
-                },
-                {
-                    selector: 'node[type="result"][category="google_web_pages"]',
-                    style: {
-                        'background-color': '#1f77b4',
-                        'shape': 'ellipse',
-                        'border-color': '#333',
-                        'border-width': 2,
-                        'content': 'data(label)',
-                        'color': '#fff',
-                        'font-size': '10px',
-                        'text-valign': 'bottom',
-                        'text-halign': 'center'
-                    }
-                },
-                {
-                    selector: 'node[type="result"][category="google_images"]',
-                    style: {
-                        'background-color': '#ff7f0e',
-                        'shape': 'rectangle',
-                        'border-color': '#333',
-                        'border-width': 2,
-                        'content': 'data(label)',
-                        'color': '#fff',
-                        'font-size': '10px',
-                        'text-valign': 'bottom',
-                        'text-halign': 'center'
-                    }
-                },
-                {
-                    selector: 'node[type="result"][category="google_documents"]',
-                    style: {
-                        'background-color': '#2ca02c',
-                        'shape': 'diamond',
-                        'border-color': '#333',
-                        'border-width': 2,
-                        'content': 'data(label)',
-                        'color': '#fff',
-                        'font-size': '10px',
-                        'text-valign': 'bottom',
-                        'text-halign': 'center'
-                    }
-                },
-                {
-                    selector: 'node[type="result"][category="bing_web_pages"]',
-                    style: {
-                        'background-color': '#d62728',
-                        'shape': 'triangle',
-                        'border-color': '#333',
-                        'border-width': 2,
-                        'content': 'data(label)',
-                        'color': '#fff',
-                        'font-size': '10px',
-                        'text-valign': 'bottom',
-                        'text-halign': 'center'
-                    }
-                },
-                {
-                    selector: 'node[type="result"]',
-                    style: {
-                        'background-color': '#9467bd',
-                        'shape': 'hexagon',
-                        'border-color': '#333',
-                        'border-width': 2,
-                        'content': 'data(label)',
-                        'color': '#fff',
-                        'font-size': '10px',
-                        'text-valign': 'bottom',
-                        'text-halign': 'center'
-                    }
-                },
-                {
-                    selector: 'edge',
-                    style: {
-                        'width': 2,
-                        'line-color': '#ccc',
-                        'target-arrow-color': '#ccc',
-                        'target-arrow-shape': 'triangle',
-                        'curve-style': 'bezier'
-                    }
-                },
-                {
-                    selector: ':selected',
-                    style: {
-                        'background-color': '#ffa500',
-                        'line-color': '#ffa500',
-                        'target-arrow-color': '#ffa500',
-                        'source-arrow-color': '#ffa500',
-                        'border-width': 2,
-                        'border-color': '#ffffff'
+                } else {
+                    alert('Please select a suspect to delete.');
+                }
+            });
+    
+            // Suspect detail modal elements
+            var detailModal = document.getElementById('detail-modal');
+            var closeDetailBtn = document.getElementById('close-detail-modal');
+    
+            // Image preview modal elements
+            var imagePreviewModal = document.getElementById('image-preview-modal');
+            var closeImagePreviewBtn = document.getElementById('close-image-preview');
+    
+            // Node selection and detail display
+            cy.on('tap', 'node', function(evt){
+                var node = evt.target;
+                cy.$('node').unselect();
+                node.select();
+
+                var type = node.data('type');
+
+                if(type === 'suspect') {
+                    // Assign the selected suspect
+                    selectedSuspect = node.data();
+                    console.log('Selected Suspect:', selectedSuspect);
+
+                    // Display Suspect Details
+                    document.getElementById('suspect-details').style.display = 'block';
+                    document.getElementById('result-details').style.display = 'none';
+
+                    document.getElementById('detail-id').innerText = node.data('id') || 'N/A';
+                    document.getElementById('detail-fullname').innerText = node.data('label') || 'N/A';
+                    document.getElementById('detail-email').innerText = node.data('email') || 'N/A';
+                    document.getElementById('detail-nic').innerText = node.data('nic') || 'N/A';
+                    document.getElementById('detail-socialmedia').innerText = node.data('socialMedia') || 'N/A';
+                }
+                else if(type === 'source') {
+                    // Display Source Details
+                    document.getElementById('suspect-details').style.display = 'none';
+                    document.getElementById('result-details').style.display = 'block';
+
+                    document.getElementById('detail-title').innerText = node.data('label') || 'Source';
+                    document.getElementById('detail-link').href = '#';
+                    document.getElementById('detail-link').innerText = 'N/A';
+                    document.getElementById('detail-snippet').innerText = '';
+                    document.getElementById('detail-category').innerText = node.data('category') || 'N/A';
+                    document.getElementById('image-preview').style.display = 'none';
+                }
+                else if(type === 'result') {
+                    // Display Result Details
+                    document.getElementById('suspect-details').style.display = 'none';
+                    document.getElementById('result-details').style.display = 'block';
+
+                    document.getElementById('detail-title').innerText = node.data('label') || 'N/A';
+                    var linkElement = document.getElementById('detail-link');
+                    linkElement.href = node.data('link') || '#';
+                    linkElement.innerText = node.data('link') ? 'View Link' : 'N/A';
+                    document.getElementById('detail-snippet').innerText = node.data('snippet') || 'N/A';
+                    document.getElementById('detail-category').innerText = node.data('category') || 'N/A';
+
+                    // Check if category is google_images to show image preview
+                    if(node.data('category') === 'google_images' && node.data('image_url')) {
+                        document.getElementById('preview-image-full').src = node.data('image_url');
+                        imagePreviewModal.style.display = 'block';
+                    } else {
+                        document.getElementById('image-preview').style.display = 'none';
                     }
                 }
-            ],
-            elements: [],
-            layout: {
-                name: 'cose',
-                padding: 10
+
+                detailModal.style.display = 'block';
+            });
+    
+            // Close detail modal
+            closeDetailBtn.addEventListener('click', function() {
+                detailModal.style.display = 'none';
+                document.getElementById('image-preview').style.display = 'none';
+            });
+    
+            // Close image preview modal
+            closeImagePreviewBtn.addEventListener('click', function() {
+                imagePreviewModal.style.display = 'none';
+            });
+    
+            // Right-click context menu
+            cy.on('cxttap', 'node', function(evt){
+                var node = evt.target;
+                var evtPos = evt.renderedPosition;
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = evt.originalEvent.pageX + 'px';
+                contextMenu.style.top = evt.originalEvent.pageY + 'px';
+                contextMenu.currentNode = node;
+            });
+    
+            // Handle context menu actions
+            contextDorking.addEventListener('click', function() {
+                var node = contextMenu.currentNode;
+                if(node && node.data('type') === 'suspect') {
+                    // Open Dorking modal for the node
+                    selectedSuspect = node.data();
+                    dorkModal.style.display = 'block';
+                }
+                contextMenu.style.display = 'none';
+            });
+    
+            contextDelete.addEventListener('click', function() {
+                var node = contextMenu.currentNode;
+                if(node) {
+                    if (confirm('Are you sure you want to delete this node and its connections?')) {
+                        var suspectId = node.id();
+                        // Send DELETE request to backend
+                        fetch('/api/delete-suspect', {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ suspect_id: suspectId })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                cy.remove(node);
+                                document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
+                                document.getElementById('total-connections').innerText = cy.edges().length;
+                            } else {
+                                alert(`Error: ${data.error}`);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred while deleting the suspect.');
+                        });
+                    }
+                }
+                contextMenu.style.display = 'none';
+            });
+    
+            // Close context menu on click elsewhere
+            document.addEventListener('click', function(e) {
+                if (!contextMenu.contains(e.target)) {
+                    contextMenu.style.display = 'none';
+                }
+            });
+    
+            // Enable selecting and deleting nodes directly
+            cy.userZoomingEnabled(true);
+            cy.userPanningEnabled(true);
+            cy.boxSelectionEnabled(true);
+            //cy.selectable(true);
+    
+            // Initialize Selected Suspect
+            var selectedSuspect = null;
+    
+            // Modal elements for Dork Suspect
+            var dorkModal = document.getElementById('dork-modal');
+            var dorkForm = document.getElementById('dork-form');
+            var dorkCancelBtn = document.getElementById('dork-cancel-button');
+    
+            // Handle Dork Suspect form submission
+            dorkForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+    
+                var searchAll = document.getElementById('search-all').value;
+                var searchEngines = [];
+                if (document.getElementById('google').checked) {
+                    searchEngines.push('google');
+                }
+                if (document.getElementById('bing').checked) {
+                    searchEngines.push('bing');
+                }
+    
+                if (searchEngines.length === 0) {
+                    alert('Please select at least one search engine.');
+                    return;
+                }
+    
+                var dorkData = {
+                    suspect_id: selectedSuspect.id,
+                    search_all: searchAll === 'yes',
+                    search_engines: searchEngines
+                };
+    
+                // Send POST request to dork-suspect endpoint
+                fetch('/api/dork-suspect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dorkData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert(`Dorking initiated for ${selectedSuspect.label}.`);
+                        apiRequestCount += 1;
+                        document.getElementById('api-requests').innerText = apiRequestCount;
+    
+                        // Start polling for results
+                        pollForResults(selectedSuspect.id, selectedSuspect.label);
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while initiating dorking.');
+                });
+    
+                // Close the modal
+                dorkModal.style.display = 'none';
+                dorkForm.reset();
+            });
+    
+            // Close Dork Modal on 'Cancel'
+            dorkCancelBtn.addEventListener('click', function() {
+                dorkModal.style.display = 'none';
+                dorkForm.reset();
+            });
+    
+            // Modal for Existing Suspect
+            var existingSuspectModal = document.getElementById('existing-suspect-modal');
+            var useExistingBtn = document.getElementById('use-existing');
+            var scrapeAgainBtn = document.getElementById('scrape-again');
+    
+            function openExistingSuspectModal(suspectId, suspectName) {
+                existingSuspectModal.style.display = 'block';
+                document.getElementById('existing-suspect-name').innerText = suspectName;
+                existingSuspectId = suspectId;
             }
-        });
-
-        // Initialize API request counter
-        let apiRequestCount = 0;
-
-        // Modal elements
-        var addModal = document.getElementById('node-modal');
-        var form = document.getElementById('node-form');
-        var nodeCancelBtn = document.getElementById('node-cancel-button');
-
-        // Open modal on 'Add Node' click
-        document.getElementById('add-node').addEventListener('click', function() {
-            addModal.style.display = 'block';
-        });
-
-        // Close node modal on 'Cancel' click
-        nodeCancelBtn.addEventListener('click', function() {
-            addModal.style.display = 'none';
-            form.reset();
-        });
-
-        // Handle form submission
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            // Collect form data
-            var fullName = document.getElementById('full-name').value.trim();
-            var email = document.getElementById('email').value.trim();
-            var nic = document.getElementById('nic').value.trim();
-            var socialMedia = document.getElementById('social-media').value.trim();
-
-            // Prepare data to send
-            var suspectData = {
-                suspect_name: fullName,
-                email: email,
-                nic: nic,
-                social_media: socialMedia
+    
+            useExistingBtn.addEventListener('click', function() {
+                existingSuspectModal.style.display = 'none';
+                // Fetch and visualize existing data using suspect_id
+                fetch(`/api/get-results?suspect_id=${encodeURIComponent(existingSuspectId)}`)
+                .then(response => response.json())
+                .then(resultsData => {
+                    console.log('Received resultsData:', resultsData); // For debugging
+                    if (resultsData.status === 'success') {
+                        const data = resultsData.data;
+                        // Process the data
+                        processResultsData(data);
+                        alert(`Loaded existing data for ${existingSuspectName}.`);
+                        // Update counts
+                        document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
+                        document.getElementById('total-connections').innerText = cy.edges().length;
+                    } else {
+                        alert(`Error: ${resultsData.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching existing data:', error);
+                    alert('An error occurred while fetching existing data.');
+                });
+            });
+    
+            scrapeAgainBtn.addEventListener('click', function() {
+                existingSuspectModal.style.display = 'none';
+                // Initiate scraping again using existingSuspectId
+                fetch('/api/dork-suspect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        suspect_id: existingSuspectId,
+                        search_all: true,
+                        search_engines: ['google', 'bing']
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert(`Dorking initiated again for ${existingSuspectName}.`);
+                        apiRequestCount += 1;
+                        document.getElementById('api-requests').innerText = apiRequestCount;
+    
+                        // Start polling for results
+                        pollForResults(existingSuspectId, existingSuspectName);
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while initiating dorking.');
+                });
+            });
+    
+            // Profile icon functionality
+            var profileIcon = document.getElementById('profile-icon');
+            var accountModal = document.getElementById('account-modal');
+            var logoutButtonModal = document.getElementById('logout-button-modal');
+    
+            profileIcon.addEventListener('click', function() {
+                accountModal.style.display = 'block';
+            });
+    
+            logoutButtonModal.addEventListener('click', function() {
+                accountModal.style.display = 'none';
+                alert('Logged out successfully.');
+                // Implement actual logout functionality here
+            });
+    
+            // Close modals when clicking outside of the content
+            window.onclick = function(event) {
+                if (event.target == addModal) {
+                    addModal.style.display = 'none';
+                    form.reset();
+                }
+                if (event.target == detailModal) {
+                    detailModal.style.display = 'none';
+                }
+                if (event.target == accountModal) {
+                    accountModal.style.display = 'none';
+                }
+                if (event.target == dorkModal) {
+                    dorkModal.style.display = 'none';
+                    dorkForm.reset();
+                }
+                if (event.target == existingSuspectModal) {
+                    existingSuspectModal.style.display = 'none';
+                }
+                if (event.target == imagePreviewModal) {
+                    imagePreviewModal.style.display = 'none';
+                }
             };
-
-            // Send POST request to add suspect
-            fetch('/api/add-suspect', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(suspectData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert(data.message);
-                    apiRequestCount += 1;
-                    document.getElementById('api-requests').innerText = apiRequestCount;
-
-                    // Add node to the graph using sanitized_name as ID
-                    cy.add({
-                        group: 'nodes',
-                        data: {
-                            id: data.suspect_id,
-                            label: fullName,
-                            email: email || '',
-                            nic: nic || '',
-                            socialMedia: socialMedia || '',
-                            type: 'suspect'
+    
+            function pollForResults(suspectId, suspectName, interval = 5000, maxAttempts = 20) {
+                let attempts = 0;
+                let pollingMessage = document.getElementById('polling-message');
+                if (pollingMessage) {
+                    pollingMessage.innerText = `Scraping in progress for ${suspectName}...`;
+                    pollingMessage.style.display = 'block';
+                } else {
+                    console.warn('Polling message element not found.');
+                }
+    
+                function checkResults() {
+                    attempts++;
+                    fetch(`/api/get-results?suspect_id=${encodeURIComponent(suspectId)}`)
+                    .then(response => response.json())
+                    .then(resultsData => {
+                        if (resultsData.status === 'success') {
+                            pollingMessage.style.display = 'none';
+                            // Process the data
+                            processResultsData(resultsData.data);
+                            alert(`Data loaded for ${suspectName}.`);
+                            // Update counts
+                            document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
+                            document.getElementById('total-connections').innerText = cy.edges().length;
+                        } else {
+                            if (attempts < maxAttempts) {
+                                // Try again after interval
+                                setTimeout(checkResults, interval);
+                            } else {
+                                pollingMessage.style.display = 'none';
+                                alert(`Failed to load results for ${suspectName} after multiple attempts.`);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching results:', error);
+                        if (attempts < maxAttempts) {
+                            // Try again after interval
+                            setTimeout(checkResults, interval);
+                        } else {
+                            pollingMessage.style.display = 'none';
+                            alert(`An error occurred while fetching results for ${suspectName}.`);
                         }
                     });
+                }
+    
+                // Start the polling
+                checkResults();
+            }
+    
+            /**
+             * Function to process results data and add to Cytoscape graph
+             * @param {Object} data - The categorized results data from the backend
+             */
+            function processResultsData(data) {
+                try {
+                    // Define styling based on category is handled by stylesheet
+    
+                    // Identify the main suspect node ID
+                    const suspectId = selectedSuspect.id;
+    
+                    // Check if the main suspect node exists; if not, add it
+                    if (cy.getElementById(suspectId).length === 0) {
+                        cy.add({
+                            group: 'nodes',
+                            data: {
+                                id: suspectId,
+                                label: selectedSuspect.label,
+                                type: 'suspect',
+                                email: selectedSuspect.email,
+                                nic: selectedSuspect.nic,
+                                socialMedia: selectedSuspect.socialMedia
+                            }
+                        });
+                    }
+    
+                    // Prepare arrays to batch add nodes and edges
+                    let newNodes = [];
+                    let newEdges = [];
+    
+                    for (let category in data) { // Iterate over each category
+                        let items = data[category];
+                        let domainGroups = {};
+    
+                        items.forEach(item => {
+                            let domain = item.domain || 'unknown_domain';
+                            if (!domainGroups[domain]) {
+                                domainGroups[domain] = [];
+                            }
+                            domainGroups[domain].push(item);
+                        });
+    
+                        for (let domain in domainGroups) {
+                            let domainItems = domainGroups[domain];
+                            domainItems.forEach(item => {
+                                // Generate a unique node ID
+                                let nodeId = generateUniqueId();
+    
+                                // Define node label based on available data
+                                let label = item.title || item.link || 'Unknown';
+    
+                                // Avoid adding duplicate nodes based on a unique attribute (e.g., link)
+                                if (item.link && cy.nodes(`[data-link="${item.link}"]`).length > 0) {
+                                    // Node already exists based on link
+                                    return;
+                                }
+    
+                                // Enrich node data with additional metadata
+                                let nodeData = {
+                                    id: nodeId,
+                                    label: label,
+                                    link: item.link || '',
+                                    snippet: item.snippet || '',
+                                    category: category,
+                                    domain: domain,
+                                    type: 'result',
+                                    image_url: item.image_url || '' // For image-related categories
+                                };
+    
+                                // Add node to the newNodes array
+                                newNodes.push({
+                                    group: 'nodes',
+                                    data: nodeData
+                                });
+    
+                                // Add an edge connecting this node to the main suspect
+                                newEdges.push({
+                                    group: 'edges',
+                                    data: {
+                                        source: suspectId,
+                                        target: nodeId
+                                    }
+                                });
+                            });
+                        }
+                    }
+    
+                    // Ensure newNodes and newEdges are arrays
+                    newNodes = Array.isArray(newNodes) ? newNodes : [newNodes];
+                    newEdges = Array.isArray(newEdges) ? newEdges : [newEdges];
+    
+                    // Batch add nodes and edges to Cytoscape
+                    cy.batch(() => {
+                        cy.add(newNodes);
+                        cy.add(newEdges);
+                    });
+    
+                    // Apply layout after adding new elements
+                    cy.layout({ name: 'cose', padding: 10, animate: true }).run();
+    
+                    // Update overall details
+                    document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
+                    document.getElementById('total-connections').innerText = cy.edges().length;
+    
+                    console.log('Results data processed and graph updated successfully.');
+                } catch (error) {
+                    console.error('Error processing results data:', error);
+                    alert('An error occurred while processing the results data.');
+                }
+            }
+    
+            /**
+             * Function to generate a unique ID for nodes
+             * @returns {string} - A unique identifier string
+             */
+            function generateUniqueId() {
+                return 'node-' + Math.random().toString(36).substr(2, 9);
+            }
+    
+            // Add Connection functionality
+            document.getElementById('add-connection').addEventListener('click', function() {
+                var selectedNodes = cy.$('node:selected');
+                if (selectedNodes.length === 2) {
+                    var source = selectedNodes[0].id();
+                    var target = selectedNodes[1].id();
+    
+                    // Send POST request to backend to add connection
+                    fetch('/api/add-connection', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ source_id: source, target_id: target })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Add edge to the graph
+                            cy.add({
+                                group: 'edges',
+                                data: { source: source, target: target }
+                            });
+                            cy.layout({ name: 'cose', padding: 10, animate: true }).run();
+                            // Update total connections
+                            document.getElementById('total-connections').innerText = cy.edges().length;
+                        } else {
+                            alert(`Error: ${data.error}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while adding the connection.');
+                    });
+                } else {
+                    alert('Please select exactly two suspects to create a connection.');
+                }
+            });
+    
+            // Web Scraping Tool
+            document.getElementById('web-scraping').addEventListener('click', function() {
+                if (selectedSuspect && selectedSuspect.type === 'suspect') {
+                    // Send request to backend to perform web scraping
+                    fetch('/api/scrape-web', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ suspect_id: selectedSuspect.id })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert(`Web scraping initiated for ${selectedSuspect.label}.`);
+                            apiRequestCount += 1;
+                            document.getElementById('api-requests').innerText = apiRequestCount;
+                        } else {
+                            alert(`Error: ${data.error}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while initiating web scraping.');
+                    });
+                } else {
+                    alert('Please select a suspect to perform web scraping.');
+                }
+            });
+    
+            // API Integration Tool
+            document.getElementById('api-integration').addEventListener('click', function() {
+                if (selectedSuspect && selectedSuspect.type === 'suspect') {
+                    // Send request to backend to perform API integration
+                    fetch('/api/api-integration', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ suspect_id: selectedSuspect.id })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert(`API integration initiated for ${selectedSuspect.label}.`);
+                            apiRequestCount += 1;
+                            document.getElementById('api-requests').innerText = apiRequestCount;
+                        } else {
+                            alert(`Error: ${data.error}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while initiating API integration.');
+                    });
+                } else {
+                    alert('Please select a suspect to perform API integration.');
+                }
+            });
+    
+            // Social Media Scraping Tool
+            document.getElementById('social-media-scraping').addEventListener('click', function() {
+                if (selectedSuspect && selectedSuspect.type === 'suspect') {
+                    // Send request to backend to perform social media scraping
+                    fetch('/api/social-media-scraping', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ suspect_id: selectedSuspect.id })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert(`Social media scraping initiated for ${selectedSuspect.label}.`);
+                            apiRequestCount += 1;
+                            document.getElementById('api-requests').innerText = apiRequestCount;
+                        } else {
+                            alert(`Error: ${data.error}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while initiating social media scraping.');
+                    });
+                } else {
+                    alert('Please select a suspect to perform social media scraping.');
+                }
+            });
+    
+            // Dork Suspect Button Functionality
+            document.getElementById('dork-suspect').addEventListener('click', function() {
+                // Retrieve the currently selected nodes
+                var selectedNodes = cy.nodes('node:selected');
+                // Filter to get the selected suspect
+                var selectedSuspects = selectedNodes.filter(node => node.data('type') === 'suspect');
 
-                    // Refresh layout
+                if (selectedSuspects.length > 0) {
+                    var suspect = selectedSuspects[0].data();
+                    var suspectId = suspect.id;
+                    console.log('Dorking Suspect:', suspect);
+
+                    // Open the dork modal to choose options
+                    dorkModal.style.display = 'block';
+
+                    // Proceed with dorking using suspectId
+                    // Example: initiateDorking(suspectId);
+                } else {
+                    alert('Please select a suspect to continue.');
+                }
+            });
+    
+            // Handle context menu delete via selection
+            // Already handled in context menu
+    
+            // Profile icon functionality
+            var profileIcon = document.getElementById('profile-icon');
+            var accountModal = document.getElementById('account-modal');
+            var logoutButtonModal = document.getElementById('logout-button-modal');
+    
+            profileIcon.addEventListener('click', function() {
+                accountModal.style.display = 'block';
+            });
+    
+            logoutButtonModal.addEventListener('click', function() {
+                accountModal.style.display = 'none';
+                alert('Logged out successfully.');
+                // Implement actual logout functionality here
+            });
+    
+            // Close modals when clicking outside of the content
+            window.onclick = function(event) {
+                if (event.target == addModal) {
+                    addModal.style.display = 'none';
+                    form.reset();
+                }
+                if (event.target == detailModal) {
+                    detailModal.style.display = 'none';
+                }
+                if (event.target == accountModal) {
+                    accountModal.style.display = 'none';
+                }
+                if (event.target == dorkModal) {
+                    dorkModal.style.display = 'none';
+                    dorkForm.reset();
+                }
+                if (event.target == existingSuspectModal) {
+                    existingSuspectModal.style.display = 'none';
+                }
+                if (event.target == imagePreviewModal) {
+                    imagePreviewModal.style.display = 'none';
+                }
+                if (!contextMenu.contains(event.target)) {
+                    contextMenu.style.display = 'none';
+                }
+            };
+    
+            function pollForResults(suspectId, suspectName, interval = 5000, maxAttempts = 20) {
+                let attempts = 0;
+                let pollingMessage = document.getElementById('polling-message');
+                if (pollingMessage) {
+                    pollingMessage.innerText = `Scraping in progress for ${suspectName}...`;
+                    pollingMessage.style.display = 'block';
+                } else {
+                    console.warn('Polling message element not found.');
+                }
+    
+                function checkResults() {
+                    attempts++;
+                    fetch(`/api/get-results?suspect_id=${encodeURIComponent(suspectId)}`)
+                    .then(response => response.json())
+                    .then(resultsData => {
+                        if (resultsData.status === 'success') {
+                            pollingMessage.style.display = 'none';
+                            // Process the data
+                            processResultsData(resultsData.data);
+                            alert(`Data loaded for ${suspectName}.`);
+                            // Update counts
+                            document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
+                            document.getElementById('total-connections').innerText = cy.edges().length;
+                        } else {
+                            if (attempts < maxAttempts) {
+                                // Try again after interval
+                                setTimeout(checkResults, interval);
+                            } else {
+                                pollingMessage.style.display = 'none';
+                                alert(`Failed to load results for ${suspectName} after multiple attempts.`);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching results:', error);
+                        if (attempts < maxAttempts) {
+                            // Try again after interval
+                            setTimeout(checkResults, interval);
+                        } else {
+                            pollingMessage.style.display = 'none';
+                            alert(`An error occurred while fetching results for ${suspectName}.`);
+                        }
+                    });
+                }
+    
+                // Start the polling
+                checkResults();
+            }
+    
+            /**
+             * Function to process results data and add to Cytoscape graph
+             * Categorizes data by scraping method and website domain name
+             * @param {Object} data - The categorized results data from the backend
+             */
+            function processResultsData(data) {
+                try {
+                    // Define styling based on category is handled by stylesheet
+
+                    // Identify the main suspect node ID
+                    const suspectId = selectedSuspect.id;
+
+                    // Check if the main suspect node exists; if not, add it
+                    if (cy.getElementById(suspectId).length === 0) {
+                        cy.add({
+                            group: 'nodes',
+                            data: {
+                                id: suspectId,
+                                label: selectedSuspect.label,
+                                type: 'suspect',
+                                email: selectedSuspect.email,
+                                nic: selectedSuspect.nic,
+                                socialMedia: selectedSuspect.socialMedia
+                            }
+                        });
+                    }
+
+                    // Prepare arrays to batch add nodes and edges
+                    let newNodes = [];
+                    let newEdges = [];
+
+                    // Iterate over each scraping method
+                    for (let method in data) {
+                        let methodItems = data[method];
+                        const methodNodeId = `method-${method.toLowerCase()}`;
+
+                        // Check if method node exists; if not, add it
+                        if (cy.getElementById(methodNodeId).length === 0) {
+                            newNodes.push({
+                                group: 'nodes',
+                                data: {
+                                    id: methodNodeId,
+                                    label: method.toUpperCase(),
+                                    type: 'method'
+                                }
+                            });
+
+                            // Connect method node to suspect node
+                            newEdges.push({
+                                group: 'edges',
+                                data: {
+                                    source: suspectId,
+                                    target: methodNodeId,
+                                    type: 'method-connection'
+                                }
+                            });
+                        }
+
+                        // Group items by domain within the method
+                        let domainGroups = {};
+                        methodItems.forEach(item => {
+                            let domain = item.domain || 'unknown_domain';
+                            if (!domainGroups[domain]) {
+                                domainGroups[domain] = [];
+                            }
+                            domainGroups[domain].push(item);
+                        });
+
+                        // Iterate over each domain
+                        for (let domain in domainGroups) {
+                            let domainItems = domainGroups[domain];
+                            const domainNodeId = `domain-${method.toLowerCase()}-${domain.replace(/\./g, '-')}`;
+
+                            // Check if domain node exists; if not, add it
+                            if (cy.getElementById(domainNodeId).length === 0) {
+                                newNodes.push({
+                                    group: 'nodes',
+                                    data: {
+                                        id: domainNodeId,
+                                        label: domain,
+                                        type: 'domain',
+                                        method: method.toLowerCase()
+                                    }
+                                });
+
+                                // Connect domain node to method node
+                                newEdges.push({
+                                    group: 'edges',
+                                    data: {
+                                        source: methodNodeId,
+                                        target: domainNodeId,
+                                        type: 'domain-connection'
+                                    }
+                                });
+                            }
+
+                            // Iterate over each result item under the domain
+                            domainItems.forEach(item => {
+                                // Generate a unique node ID
+                                let nodeId = generateUniqueId();
+
+                                // Define node label based on available data
+                                let label = item.title || item.link || 'Unknown';
+
+                                // Avoid adding duplicate nodes based on a unique attribute (e.g., link)
+                                if (item.link && cy.nodes(`[data-link="${item.link}"]`).length > 0) {
+                                    // Node already exists based on link
+                                    return;
+                                }
+
+                                // Enrich node data with additional metadata
+                                let nodeData = {
+                                    id: nodeId,
+                                    label: label,
+                                    link: item.link || '',
+                                    snippet: item.snippet || '',
+                                    category: item.category || 'N/A',
+                                    domain: domain,
+                                    method: method.toLowerCase(),
+                                    type: 'result',
+                                    image_url: item.image_url || '' // For image-related categories
+                                };
+
+                                // Add node to the newNodes array
+                                newNodes.push({
+                                    group: 'nodes',
+                                    data: nodeData
+                                });
+
+                                // Add an edge connecting this node to the domain node
+                                newEdges.push({
+                                    group: 'edges',
+                                    data: {
+                                        source: domainNodeId,
+                                        target: nodeId,
+                                        type: 'result-connection'
+                                    }
+                                });
+                            });
+                        }
+                    }
+
+                    // Ensure newNodes and newEdges are arrays
+                    newNodes = Array.isArray(newNodes) ? newNodes : [newNodes];
+                    newEdges = Array.isArray(newEdges) ? newEdges : [newEdges];
+
+                    // Batch add nodes and edges to Cytoscape
+                    cy.batch(() => {
+                        cy.add(newNodes);
+                        cy.add(newEdges);
+                    });
+
+                    // Apply layout after adding new elements
                     cy.layout({ name: 'cose', padding: 10, animate: true }).run();
 
                     // Update overall details
                     document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
                     document.getElementById('total-connections').innerText = cy.edges().length;
-                } else if (data.status === 'exists') {
-                    // Suspect already exists
-                    openExistingSuspectModal(data.suspect_name);
-                } else {
-                    alert(`Error: ${data.error}`);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while adding the suspect.');
-            });
 
-            // Close modal and reset form
-            addModal.style.display = 'none';
-            form.reset();
-        });
-
-        // Delete node functionality
-        document.getElementById('delete-node').addEventListener('click', function() {
-            var selectedNodes = cy.$(':selected');
-            if (selectedNodes.length > 0) {
-                if (confirm('Are you sure you want to delete the selected suspect(s) and all their connections?')) {
-                    selectedNodes.forEach(node => {
-                        var suspectName = node.data('label');
-                        // Send DELETE request to backend
-                        fetch('/api/delete-suspect', {
-                            method: 'DELETE',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ suspect_name: suspectName })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'success') {
-                                console.log(`Deleted suspect: ${suspectName}`);
-                            } else {
-                                console.error(`Error deleting suspect: ${data.error}`);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                        });
-
-                        // Remove connected edges and nodes
-                        var connectedElements = node.connectedEdges().connectedNodes();
-                        cy.remove(node);
-                        cy.remove(connectedElements);
-                    });
-
-                    // Update overall details
-                    document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
-                    document.getElementById('total-connections').innerText = cy.edges().length;
-                }
-            } else {
-                alert('Please select a suspect to delete.');
-            }
-        });
-
-        // Suspect detail modal elements
-        var detailModal = document.getElementById('detail-modal');
-        var closeDetailBtn = document.getElementById('close-detail-modal');
-
-        // Image preview modal elements
-        var imagePreviewModal = document.getElementById('image-preview-modal');
-        var closeImagePreviewBtn = document.getElementById('close-image-preview');
-
-        // Node selection and detail display
-        cy.on('tap', 'node', function(evt){
-            var node = evt.target;
-            cy.$('node').unselect();
-            node.select();
-
-            // Determine node type
-            var type = node.data('type');
-
-            if(type === 'suspect') {
-                // Display Suspect Details
-                document.getElementById('suspect-details').style.display = 'block';
-                document.getElementById('result-details').style.display = 'none';
-
-                document.getElementById('detail-id').innerText = node.data('id') || 'N/A';
-                document.getElementById('detail-fullname').innerText = node.data('label') || 'N/A';
-                document.getElementById('detail-email').innerText = node.data('email') || 'N/A';
-                document.getElementById('detail-nic').innerText = node.data('nic') || 'N/A';
-                document.getElementById('detail-socialmedia').innerText = node.data('socialMedia') || 'N/A';
-            }
-            else if(type === 'source') {
-                // Display Source Details
-                document.getElementById('suspect-details').style.display = 'none';
-                document.getElementById('result-details').style.display = 'block';
-
-                document.getElementById('detail-title').innerText = node.data('label') || 'Source';
-                document.getElementById('detail-link').href = '#';
-                document.getElementById('detail-link').innerText = 'N/A';
-                document.getElementById('detail-snippet').innerText = '';
-                document.getElementById('detail-category').innerText = node.data('type') || 'N/A';
-                document.getElementById('image-preview').style.display = 'none';
-            }
-            else if(type === 'result') {
-                // Display Result Details
-                document.getElementById('suspect-details').style.display = 'none';
-                document.getElementById('result-details').style.display = 'block';
-
-                document.getElementById('detail-title').innerText = node.data('label') || 'N/A';
-                var linkElement = document.getElementById('detail-link');
-                linkElement.href = node.data('link') || '#';
-                linkElement.innerText = node.data('link') ? 'View Link' : 'N/A';
-                document.getElementById('detail-snippet').innerText = node.data('snippet') || 'N/A';
-                document.getElementById('detail-category').innerText = node.data('category') || 'N/A';
-
-                // Check if category is google_images to show image preview
-                if(node.data('category') === 'google_images' && node.data('image_url')) {
-                    document.getElementById('preview-image-full').src = node.data('image_url');
-                    imagePreviewModal.style.display = 'block';
-                } else {
-                    document.getElementById('image-preview').style.display = 'none';
+                    console.log('Results data processed and graph updated successfully.');
+                } catch (error) {
+                    console.error('Error processing results data:', error);
+                    alert('An error occurred while processing the results data.');
                 }
             }
 
-            detailModal.style.display = 'block';
-        });
-
-        // Close detail modal
-        closeDetailBtn.addEventListener('click', function() {
-            detailModal.style.display = 'none';
-            document.getElementById('image-preview').style.display = 'none';
-        });
-
-        // Close image preview modal
-        closeImagePreviewBtn.addEventListener('click', function() {
-            imagePreviewModal.style.display = 'none';
-        });
-
-        // Deselect node when clicking on empty space
-        cy.on('tap', function(event){
-            if (event.target === cy) {
-                cy.$('node').unselect();
-            }
-        });
-
-        // Update total connections when edges change
-        cy.on('add remove', 'edge', function() {
-            document.getElementById('total-connections').innerText = cy.edges().length;
-        });
-
-        // Add Connection functionality
-        document.getElementById('add-connection').addEventListener('click', function() {
-            var selectedNodes = cy.$('node:selected');
-            if (selectedNodes.length === 2) {
-                var source = selectedNodes[0].id();
-                var target = selectedNodes[1].id();
-
-                // Send POST request to backend to add connection
-                fetch('/api/add-connection', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ source: source, target: target })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        // Add edge to the graph
-                        cy.add({
-                            group: 'edges',
-                            data: { source: source, target: target }
-                        });
-                        cy.layout({ name: 'cose', padding: 10, animate: true }).run();
-                        // Update total connections
-                        document.getElementById('total-connections').innerText = cy.edges().length;
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while adding the connection.');
-                });
-            } else {
-                alert('Please select exactly two suspects to create a connection.');
-            }
-        });
-
-        // Define the currently selected suspect
-        var selectedSuspect = null;
-
-        cy.on('select', 'node', function(evt){
-            var node = evt.target;
-            selectedSuspect = node.data();
-        });
-
-        cy.on('unselect', 'node', function(evt){
-            selectedSuspect = null;
-        });
-
-        // Web Scraping Tool
-        document.getElementById('web-scraping').addEventListener('click', function() {
-            if (selectedSuspect && selectedSuspect.type === 'suspect') {
-                // Send request to backend to perform web scraping
-                fetch('/api/scrape-web', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ suspect_name: selectedSuspect.label })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert(`Web scraping initiated for ${selectedSuspect.label}.`);
-                        apiRequestCount += 1;
-                        document.getElementById('api-requests').innerText = apiRequestCount;
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while initiating web scraping.');
-                });
-            } else {
-                alert('Please select a suspect to perform web scraping.');
-            }
-        });
-
-        // API Integration Tool
-        document.getElementById('api-integration').addEventListener('click', function() {
-            if (selectedSuspect && selectedSuspect.type === 'suspect') {
-                // Send request to backend to perform API integration
-                fetch('/api/api-integration', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ suspect_name: selectedSuspect.label })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert(`API integration initiated for ${selectedSuspect.label}.`);
-                        apiRequestCount += 1;
-                        document.getElementById('api-requests').innerText = apiRequestCount;
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while initiating API integration.');
-                });
-            } else {
-                alert('Please select a suspect to perform API integration.');
-            }
-        });
-
-        // Social Media Scraping Tool
-        document.getElementById('social-media-scraping').addEventListener('click', function() {
-            if (selectedSuspect && selectedSuspect.type === 'suspect') {
-                // Send request to backend to perform social media scraping
-                fetch('/api/social-media-scraping', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ suspect_name: selectedSuspect.label })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert(`Social media scraping initiated for ${selectedSuspect.label}.`);
-                        apiRequestCount += 1;
-                        document.getElementById('api-requests').innerText = apiRequestCount;
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while initiating social media scraping.');
-                });
-            } else {
-                alert('Please select a suspect to perform social media scraping.');
-            }
-        });
-
-        // Dork Suspect Button Functionality
-        document.getElementById('dork-suspect').addEventListener('click', function() {
-            if (existingSuspectName || (selectedSuspect && selectedSuspect.type === 'suspect')) { // Check existingSuspectName first
-                var suspectName = existingSuspectName || (selectedSuspect ? selectedSuspect.label : '');
-                if (suspectName) {
-                    // Open the dork modal to choose options
-                    dorkModal.style.display = 'block';
-                } else {
-                    alert('Please select a suspect to continue.');
-                }
-            } else {
-                alert('Please select a suspect to continue.');
-            }
-        });
-
-        // Modal elements for Dork Suspect
-        var dorkModal = document.getElementById('dork-modal');
-        var dorkForm = document.getElementById('dork-form');
-        var dorkCancelBtn = document.getElementById('dork-cancel-button');
-
-        // Handle Dork Suspect form submission
-        dorkForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            var searchAll = document.getElementById('search-all').value;
-            var searchEngines = [];
-            if (document.getElementById('google').checked) {
-                searchEngines.push('google');
-            }
-            if (document.getElementById('bing').checked) {
-                searchEngines.push('bing');
+            /**
+             * Function to generate a unique ID for nodes
+             * @returns {string} - A unique identifier string
+             */
+            function generateUniqueId() {
+                return 'node-' + Math.random().toString(36).substr(2, 9);
             }
 
-            if (searchEngines.length === 0) {
-                alert('Please select at least one search engine.');
-                return;
-            }
-
-            var dorkData = {
-                suspect_name: existingSuspectName || (selectedSuspect ? selectedSuspect.label : ''),
-                search_all: searchAll === 'yes',
-                search_engines: searchEngines
-            };
-
-            // Send POST request to dork-suspect endpoint
-            fetch('/api/dork-suspect', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dorkData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert(`Dorking initiated for ${dorkData.suspect_name}.`);
-                    apiRequestCount += 1;
-                    document.getElementById('api-requests').innerText = apiRequestCount;
-
-                    // Fetch and process the scraped data
-                    return fetch(`/api/get-results?suspect_name=${encodeURIComponent(dorkData.suspect_name)}`);
-                } else if (data.status === 'exists') {
-                    // Suspect already scraped, prompt user
-                    openExistingSuspectModal(data.suspect_name);
-                    return null;
-                } else {
-                    alert(`Error: ${data.error}`);
-                    return null;
-                }
-            })
-            .then(resultsResponse => {
-                if (resultsResponse) {
-                    return resultsResponse.json();
-                }
-            })
-            .then(resultsData => {
-                if (resultsData && resultsData.status === 'success') {
-                    processResultsData(resultsData.data);
-                    alert(`Dorking completed for ${dorkData.suspect_name}.`);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while initiating dorking.');
-            });
-
-            // Close the modal
-            dorkModal.style.display = 'none';
-            dorkForm.reset();
-        });
-
-        // Close Dork Modal on 'Cancel'
-        dorkCancelBtn.addEventListener('click', function() {
-            dorkModal.style.display = 'none';
-            dorkForm.reset();
-        });
-
-        // Modal for Existing Suspect
-        var existingSuspectModal = document.getElementById('existing-suspect-modal');
-        var useExistingBtn = document.getElementById('use-existing');
-        var scrapeAgainBtn = document.getElementById('scrape-again');
-
-        function openExistingSuspectModal(suspectName) {
-            existingSuspectModal.style.display = 'block';
-            document.getElementById('existing-suspect-name').innerText = suspectName;
-            existingSuspectName = suspectName; // Store the suspect name
-        }
-
-        useExistingBtn.addEventListener('click', function() {
-            existingSuspectModal.style.display = 'none';
-            // Fetch and visualize existing data using existingSuspectName
-            fetch(`/api/get-results?suspect_name=${encodeURIComponent(existingSuspectName)}`)
-            .then(response => response.json())
-            .then(resultsData => {
-                console.log('Received resultsData:', resultsData); // For debugging
-                if (resultsData.status === 'success') {
-                    const data = resultsData.data;
-                    // Process the data
-                    processResultsData(data);
-                    alert(`Loaded existing data for ${existingSuspectName}.`);
-                    // Update counts
-                    document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
-                    document.getElementById('total-connections').innerText = cy.edges().length;
-                } else {
-                    alert(`Error: ${resultsData.error}`);
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching existing data:', error);
-                alert('An error occurred while fetching existing data.');
+            window.addEventListener('resize', function() {
+                cy.resize();
+                cy.fit();
             });
         });
-
-        scrapeAgainBtn.addEventListener('click', function() {
-            existingSuspectModal.style.display = 'none';
-            // Initiate scraping again using existingSuspectName
-            fetch('/api/dork-suspect', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    suspect_name: existingSuspectName,
-                    search_all: true,
-                    search_engines: ['google', 'bing']
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert(`Dorking initiated again for ${existingSuspectName}.`);
-                    apiRequestCount += 1;
-                    document.getElementById('api-requests').innerText = apiRequestCount;
-                } else {
-                    alert(`Error: ${data.error}`);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while initiating dorking.');
-            });
-        });
-
-        // Profile icon functionality
-        var profileIcon = document.getElementById('profile-icon');
-        var accountModal = document.getElementById('account-modal');
-        var logoutButtonModal = document.getElementById('logout-button-modal');
-
-        profileIcon.addEventListener('click', function() {
-            accountModal.style.display = 'block';
-        });
-
-        logoutButtonModal.addEventListener('click', function() {
-            accountModal.style.display = 'none';
-            alert('Logged out successfully.');
-            // Implement actual logout functionality here
-        });
-
-        // Close modals when clicking outside of the content
-        window.onclick = function(event) {
-            if (event.target == addModal) {
-                addModal.style.display = 'none';
-                form.reset();
-            }
-            if (event.target == detailModal) {
-                detailModal.style.display = 'none';
-            }
-            if (event.target == accountModal) {
-                accountModal.style.display = 'none';
-            }
-            if (event.target == dorkModal) {
-                dorkModal.style.display = 'none';
-                dorkForm.reset();
-            }
-            if (event.target == existingSuspectModal) {
-                existingSuspectModal.style.display = 'none';
-            }
-            if (event.target == imagePreviewModal) {
-                imagePreviewModal.style.display = 'none';
-            }
-        };
-
-        /**
-         * Function to process results data and add to Cytoscape graph
-         * @param {Object} data - The categorized results data from the backend
-         */
-        function processResultsData(data) {
-            try {
-                // Define styling based on category is handled by stylesheet
-
-                // Identify the main suspect node ID
-                const mainSuspectId = existingSuspectName || (selectedSuspect ? selectedSuspect.label : 'main_suspect');
-
-                // Check if the main suspect node exists; if not, add it
-                if (cy.getElementById(mainSuspectId).length === 0) {
-                    cy.add({
-                        group: 'nodes',
-                        data: {
-                            id: mainSuspectId,
-                            label: mainSuspectId,
-                            type: 'suspect',
-                            email: '',
-                            nic: '',
-                            socialMedia: ''
-                        }
-                    });
-                }
-
-                // Prepare arrays to batch add nodes and edges
-                let newNodes = [];
-                let newEdges = [];
-
-                for (let source in data) { // Iterate over each source
-                    // Create a main source node if it doesn't exist
-                    const sourceNodeId = `source-${source.toLowerCase().replace(/\s+/g, '_')}`;
-                    if (cy.getElementById(sourceNodeId).length === 0) {
-                        newNodes.push({
-                            group: 'nodes',
-                            data: {
-                                id: sourceNodeId,
-                                label: source,
-                                type: 'source'
-                            }
-                        });
-                        // Connect source node to main suspect
-                        newEdges.push({
-                            group: 'edges',
-                            data: {
-                                source: mainSuspectId,
-                                target: sourceNodeId
-                            }
-                        });
-                    }
-
-                    let items = data[source];
-                    items.forEach(item => {
-                        // Determine the category based on the source
-                        let determinedCategory = '';
-                        switch(source.toLowerCase()) {
-                            case 'github':
-                                determinedCategory = 'github';
-                                break;
-                            case 'bing':
-                                determinedCategory = 'bing_web_pages';
-                                break;
-                            // Add more cases as needed for different sources
-                            default:
-                                determinedCategory = 'other';
-                        }
-
-                        // Generate a unique node ID
-                        let nodeId = generateUniqueId();
-
-                        // Define node label based on available data
-                        let label = item.title || item.link || 'Unknown';
-
-                        // Avoid adding duplicate nodes based on a unique attribute (e.g., link)
-                        if (item.link && cy.nodes(`[data-link="${item.link}"]`).length > 0) {
-                            // Node already exists based on link
-                            return;
-                        }
-
-                        // Enrich node data with additional metadata
-                        let nodeData = {
-                            id: nodeId,
-                            label: label,
-                            link: item.link || '',
-                            snippet: item.snippet || '',
-                            category: determinedCategory,
-                            type: 'result',
-                            image_url: item.image_url || '' // For image-related categories
-                        };
-
-                        // Add node to the newNodes array
-                        newNodes.push({
-                            group: 'nodes',
-                            data: nodeData
-                        });
-
-                        // Add an edge connecting this node to the source node
-                        newEdges.push({
-                            group: 'edges',
-                            data: {
-                                source: sourceNodeId,
-                                target: nodeId
-                            }
-                        });
-                    });
-                }
-
-                // Ensure newNodes and newEdges are arrays
-                newNodes = Array.isArray(newNodes) ? newNodes : [newNodes];
-                newEdges = Array.isArray(newEdges) ? newEdges : [newEdges];
-
-                // Batch add nodes and edges to Cytoscape
-                cy.batch(() => {
-                    cy.add(newNodes);
-                    cy.add(newEdges);
-                });
-
-                // Apply layout after adding new elements
-                cy.layout({ name: 'cose', padding: 10, animate: true }).run();
-
-                // Update overall details
-                document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
-                document.getElementById('total-connections').innerText = cy.edges().length;
-
-                console.log('Results data processed and graph updated successfully.');
-            } catch (error) {
-                console.error('Error processing results data:', error);
-                alert('An error occurred while processing the results data.');
-            }
-        }
-
-        /**
-         * Function to generate a unique ID for nodes
-         * @returns {string} - A unique identifier string
-         */
-        function generateUniqueId() {
-            return 'node-' + Math.random().toString(36).substr(2, 9);
-        }
-    });
-</script>
+        </script>
 </body>
 </html>

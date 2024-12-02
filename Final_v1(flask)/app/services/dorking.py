@@ -1,15 +1,14 @@
+# dorking.py
 import os
 import json
+import re
 import requests
+import time
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 from PIL import Image
 from io import BytesIO
-import PyPDF2
-import time
-import re
-import uuid
 
 # ------------------------------ Configuration ------------------------------
 
@@ -26,7 +25,7 @@ def load_config(config_file='config.json'):
     required_keys = ['GOOGLE_API_KEY', 'GOOGLE_SEARCH_ENGINE_ID', 'BING_API_KEY']
     for key in required_keys:
         if key not in config or not config[key]:
-            raise KeyError(f"'{key}' is missing or empty in the configuration file.")
+            raise KeyError(f"Configuration key '{key}' is missing or empty.")
     
     return config
 
@@ -47,11 +46,11 @@ def sanitize_filename(name):
     sanitized = re.sub(r'[<>:"/\\|?*]', '_', name)
     return sanitized
 
-def create_suspect_folder(suspect_name, base_dir='suspects'):
+def create_suspect_folder(suspect_id, base_dir='suspects'):
     """
     Create a dedicated folder for the suspect with necessary subdirectories.
     """
-    sanitized_name = sanitize_filename(suspect_name)
+    sanitized_name = sanitize_filename(suspect_id)
     suspect_folder = os.path.join(base_dir, sanitized_name)
     images_folder = os.path.join(suspect_folder, 'images')
     documents_folder = os.path.join(suspect_folder, 'documents')
@@ -67,16 +66,12 @@ def load_cache(suspect_folder):
     if os.path.exists(cache_file):
         try:
             with open(cache_file, 'r', encoding='utf-8') as f:
-                cache = json.load(f)
-            return cache
+                return json.load(f)
         except json.JSONDecodeError:
-            print(f"Error: Cache file '{cache_file}' contains invalid JSON.")
-            return {}
+            print(f"Error: Cache file '{cache_file}' contains invalid JSON. Ignoring cache.")
         except Exception as e:
-            print(f"Error: An error occurred while reading cache file '{cache_file}': {e}")
-            return {}
-    else:
-        return {}
+            print(f"Error loading cache: {e}")
+    return {}
 
 def save_cache(suspect_folder, cache):
     """
@@ -133,47 +128,51 @@ def generate_name_variants(full_name):
     unique_variants = []
     for variant in variants:
         if variant not in seen:
-            unique_variants.append(variant)
             seen.add(variant)
+            unique_variants.append(variant)
     
     return unique_variants
 
-def perform_google_search(query, num_results=10, start=1, search_type=None, retries=3, backoff_factor=2):
+def perform_google_search(query, num_results=50, search_type=None, retries=3, backoff_factor=2):
     """
     Perform a search using Google Custom Search API with retry logic.
+    Supports fetching more results by handling pagination.
     """
     service = build("customsearch", "v1", developerKey=GOOGLE_API_KEY)
-    params = {
-        'q': query,
-        'cx': GOOGLE_SEARCH_ENGINE_ID,
-        'num': num_results,
-        'start': start
-    }
-    if search_type == 'image':
-        params['searchType'] = 'image'
-    
-    for attempt in range(1, retries + 1):
+    all_items = []
+    start = 1
+    while len(all_items) < num_results:
+        params = {
+            'q': query,
+            'cx': GOOGLE_SEARCH_ENGINE_ID,
+            'num': min(10, num_results - len(all_items)),
+            'start': start
+        }
+        if search_type == 'image':
+            params['searchType'] = 'image'
+        
         try:
-            res = service.cse().list(**params).execute()
-            return res
-        except HttpError as e:
-            if e.resp.status == 429:
-                print("Error: Google Custom Search API quota exceeded for the day.")
-                return {}
-            elif e.resp.status in [500, 502, 503, 504]:
-                wait_time = backoff_factor ** attempt
-                print(f"Google API server error (status {e.resp.status}). Retrying in {wait_time} seconds...")
-                time.sleep(wait_time)
+            response = service.cse().list(**params).execute()
+            items = response.get('items', [])
+            all_items.extend(items)
+            if 'nextPage' in response.get('queries', {}):
+                start = response['queries']['nextPage'][0]['startIndex']
             else:
-                print(f"An HTTP error occurred with Google API: {e}")
-                return {}
+                break
+        except HttpError as e:
+            if e.resp.status in [500, 502, 503, 504]:
+                if retries > 0:
+                    time.sleep(backoff_factor)
+                    retries -= 1
+                    continue
+            print(f"Google API Error: {e}")
+            break
         except Exception as e:
-            print(f"An unexpected error occurred with Google API: {e}")
-            return {}
-    print("Max retries exceeded for Google API. Moving to the next search option.")
-    return {}
+            print(f"Google API Error: {e}")
+            break
+    return all_items
 
-def perform_bing_search(query, count=10, offset=0):
+def perform_bing_search(query, count=50, offset=0):
     """
     Perform a Bing Web Search.
     """
@@ -192,7 +191,7 @@ def perform_bing_search(query, count=10, offset=0):
         return response.json()
     except requests.exceptions.HTTPError as errh:
         if response.status_code == 429:
-            print("Error: Bing Search API rate limit exceeded.")
+            print("Bing API rate limit exceeded.")
         else:
             print(f"Bing HTTP Error: {errh}")
         return {}
@@ -208,14 +207,15 @@ def extract_google_web_details(search_results):
     Extract details from Google Web search results.
     """
     details = []
-    if 'items' in search_results:
-        for item in search_results['items']:
-            detail = {
-                'title': item.get('title'),
-                'link': item.get('link'),
-                'snippet': item.get('snippet')
-            }
-            details.append(detail)
+    for item in search_results:
+        domain = urlparse(item.get('link', '')).netloc
+        details.append({
+            'title': item.get('title'),
+            'link': item.get('link'),
+            'snippet': item.get('snippet'),
+            'category': 'google_web_pages',
+            'domain': domain
+        })
     return details
 
 def extract_google_image_details(search_results):
@@ -223,15 +223,32 @@ def extract_google_image_details(search_results):
     Extract details from Google Image search results.
     """
     details = []
-    if 'items' in search_results:
-        for item in search_results['items']:
-            detail = {
-                'title': item.get('title'),
-                'link': item.get('link'),
-                'image_thumbnail': item.get('image', {}).get('thumbnailLink'),
-                'image_context': item.get('image', {}).get('contextLink')
-            }
-            details.append(detail)
+    for item in search_results:
+        domain = urlparse(item.get('link', '')).netloc
+        details.append({
+            'title': item.get('title'),
+            'link': item.get('link'),
+            'snippet': '',
+            'category': 'google_images',
+            'image_url': item.get('link'),
+            'domain': domain
+        })
+    return details
+
+def extract_google_document_details(search_results):
+    """
+    Extract details from Google Document search results.
+    """
+    details = []
+    for item in search_results:
+        domain = urlparse(item.get('link', '')).netloc
+        details.append({
+            'title': item.get('title'),
+            'link': item.get('link'),
+            'snippet': item.get('snippet'),
+            'category': 'google_documents',
+            'domain': domain
+        })
     return details
 
 def extract_bing_web_details(search_results):
@@ -239,14 +256,15 @@ def extract_bing_web_details(search_results):
     Extract details from Bing Web search results.
     """
     details = []
-    if 'webPages' in search_results and 'value' in search_results['webPages']:
-        for item in search_results['webPages']['value']:
-            detail = {
-                'title': item.get('name'),
-                'link': item.get('url'),
-                'snippet': item.get('snippet')
-            }
-            details.append(detail)
+    for item in search_results.get('webPages', {}).get('value', []):
+        domain = urlparse(item.get('url', '')).netloc
+        details.append({
+            'title': item.get('name'),
+            'link': item.get('url'),
+            'snippet': item.get('snippet'),
+            'category': 'bing_web_pages',
+            'domain': domain
+        })
     return details
 
 def save_to_json(data, filename='results.json'):
@@ -267,15 +285,11 @@ def download_image(url, save_path):
     try:
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
-            img = Image.open(BytesIO(response.content))
-            img_format = img.format.lower()
-            if img_format not in ['jpg', 'jpeg', 'png', 'gif', 'bmp']:
-                img_format = 'jpg'  # Default format
-            save_path = f"{save_path}.{img_format}"
-            img.save(save_path)
+            image = Image.open(BytesIO(response.content))
+            image.save(save_path)
             print(f"Image saved to {save_path}")
         else:
-            print(f"Failed to download image from {url}: Status Code {response.status_code}")
+            print(f"Failed to download image from {url}. Status code: {response.status_code}")
     except Exception as e:
         print(f"Exception occurred while downloading image from {url}: {e}")
 
@@ -290,7 +304,7 @@ def download_document(url, save_path):
                 f.write(response.content)
             print(f"Document saved to {save_path}")
         else:
-            print(f"Failed to download document from {url}: Status Code {response.status_code}")
+            print(f"Failed to download document from {url}. Status code: {response.status_code}")
     except Exception as e:
         print(f"Exception occurred while downloading document from {url}: {e}")
 
@@ -299,16 +313,15 @@ def extract_text_from_pdf(file_path):
     Extract text from a PDF file.
     """
     try:
+        import PyPDF2
         with open(file_path, 'rb') as f:
             reader = PyPDF2.PdfReader(f)
             text = ""
             for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text
+                text += page.extract_text() or ""
         return text
     except Exception as e:
-        print(f"Failed to extract text from {file_path}: {e}")
+        print(f"Error extracting text from PDF {file_path}: {e}")
         return ""
 
 def process_results(category, items, suspect_folder):
@@ -317,34 +330,27 @@ def process_results(category, items, suspect_folder):
     """
     print(f"\n=== {category.replace('_', ' ').title()} ===")
     if not items:
-        print("No results found.")
+        print("No items found.")
         return
     for idx, item in enumerate(items, start=1):
-        print(f"\nResult {idx}:")
-        for key, value in item.items():
-            print(f"{key.replace('_', ' ').title()}: {value}")
-
-        # Optional: Download Images/Documents
-        if category.startswith('google_images') or category == 'images':
-            img_url = item.get('link')
-            if img_url:
-                img_save_path = os.path.join(suspect_folder, 'images', f"{category}_result_{idx}")
-                download_image(img_url, img_save_path)
-        elif category.startswith('google_documents') or category == 'documents':
-            doc_url = item.get('link')
-            if doc_url:
-                doc_save_path = os.path.join(suspect_folder, 'documents', f"{category}_result_{idx}.pdf")
-                download_document(doc_url, doc_save_path)
-                # Extract text from PDF
-                extracted_text = extract_text_from_pdf(doc_save_path)
-                if extracted_text:
-                    text_save_path = os.path.join(suspect_folder, 'documents', f"{category}_result_{idx}.txt")
-                    try:
-                        with open(text_save_path, 'w', encoding='utf-8') as f:
-                            f.write(extracted_text)
-                        print(f"Extracted text saved to {text_save_path}")
-                    except Exception as e:
-                        print(f"Failed to save extracted text: {e}")
+        print(f"{idx}. {item['title']} - {item['link']}")
+        # Save details based on category
+        if category in ['google_web_pages', 'bing_web_pages']:
+            # Save web page details
+            pass  # Implement as needed
+        elif category == 'google_images':
+            # Download and save image
+            image_path = os.path.join(suspect_folder, 'images', f"image_{idx}.jpg")
+            download_image(item['image_url'], image_path)
+        elif category == 'google_documents':
+            # Download and process document
+            doc_path = os.path.join(suspect_folder, 'documents', f"document_{idx}.pdf")
+            download_document(item['link'], doc_path)
+            text = extract_text_from_pdf(doc_path)
+            # Save extracted text if needed
+            text_path = os.path.join(suspect_folder, 'documents', f"document_{idx}.txt")
+            with open(text_path, 'w', encoding='utf-8') as f:
+                f.write(text)
 
 def build_cache_key(engine, category, query):
     """
@@ -352,108 +358,46 @@ def build_cache_key(engine, category, query):
     """
     return f"{engine}_{category}_{query}"
 
-def perform_searches(selected_variants, search_types, suspect_folder, cache, all_details, total_results=50, results_per_request=10):
+def perform_searches(selected_variants, search_types, suspect_folder, cache, all_details, total_results=50):
     """
     Perform searches for each selected name variant and search type.
     """
     for variant in selected_variants:
         for search_type in search_types:
-            engine = search_type['engine']
-            category = search_type['type']
-            query = search_type['query'].format(name=variant)
-            search_engine = 'google' if engine == 'google' else 'bing'
-
-            # Build a unique cache key
-            cache_key = build_cache_key(engine, category, query)
-
-            print(f"\nSearching for: {query} using {engine.capitalize()} Search")
-
+            cache_key = build_cache_key(search_type, variant, search_type)
             if cache_key in cache:
-                # Use cached data
-                print(f"Loading cached results for query: {query}")
-                search_results = cache[cache_key]
-                # Process cached results
-                if engine == 'google':
-                    if category in ['web_pages', 'documents']:
-                        details = extract_google_web_details(search_results)
-                        key = f"google_{category}"
-                        all_details[key].extend(details)
-                    elif category == 'images':
-                        details = extract_google_image_details(search_results)
-                        key = f"google_{category}"
-                        all_details[key].extend(details)
-                elif engine == 'bing':
-                    if category == 'web_pages':
-                        details = extract_bing_web_details(search_results)
-                        key = f"bing_{category}"
-                        all_details[key].extend(details)
-                continue  # Skip to the next search type
-
+                print(f"Using cached results for {cache_key}")
+                all_details[search_type].extend(cache[cache_key])
+                continue
+            if search_type == 'google_web_pages':
+                results = perform_google_search(variant, num_results=total_results, search_type=None)
+                details = extract_google_web_details(results)
+            elif search_type == 'google_images':
+                results = perform_google_search(variant, num_results=total_results, search_type='image')
+                details = extract_google_image_details(results)
+            elif search_type == 'google_documents':
+                results = perform_google_search(variant, num_results=total_results, search_type=None)
+                details = extract_google_document_details(results)
+            elif search_type == 'bing_web_pages':
+                results = perform_bing_search(variant, count=total_results)
+                details = extract_bing_web_details(results)
             else:
-                # No cached data; perform search and cache the results
-                if engine == 'google':
-                    # Perform paginated Google Search
-                    search_results = {}
-                    for start in range(1, total_results + 1, results_per_request):
-                        temp_results = perform_google_search(
-                            query=query,
-                            num_results=results_per_request,
-                            start=start,
-                            search_type=search_type.get('search_type', None)
-                        )
+                details = []
+            all_details[search_type].extend(details)
+            cache[cache_key] = details
+            save_cache(suspect_folder, cache)
 
-                        if not temp_results:
-                            print("No more results or an error occurred with Google Search.")
-                            break
-
-                        if category in ['web_pages', 'documents']:
-                            details = extract_google_web_details(temp_results)
-                            key = f"google_{category}"
-                            all_details[key].extend(details)
-                        elif category == 'images':
-                            details = extract_google_image_details(temp_results)
-                            key = f"google_{category}"
-                            all_details[key].extend(details)
-
-                        print(f"Fetched results {start} to {start + results_per_request - 1} from Google.")
-                        # Optional: Delay to respect rate limits
-                        time.sleep(1)  # Sleep for 1 second between requests
-
-                    # Update cache with all fetched results
-                    cache[cache_key] = temp_results
-
-                elif engine == 'bing':
-                    # Perform paginated Bing Search
-                    search_results = {}
-                    for offset in range(0, total_results, results_per_request):
-                        temp_results = perform_bing_search(
-                            query=query,
-                            count=results_per_request,
-                            offset=offset
-                        )
-
-                        if not temp_results:
-                            print("No more results or an error occurred with Bing Search.")
-                            break
-
-                        details = extract_bing_web_details(temp_results)
-                        key = f"bing_{category}"
-                        all_details[key].extend(details)
-
-                        print(f"Fetched results {offset + 1} to {offset + results_per_request} from Bing.")
-                        # Optional: Delay to respect rate limits
-                        time.sleep(1)  # Sleep for 1 second between requests
-
-                    # Update cache with all fetched results
-                    cache[cache_key] = temp_results
-
-                # Save cache after scraping new data
-                save_cache(suspect_folder, cache)
-
-def perform_dorking(suspect_name, search_all=True, search_engines=['google', 'bing']):
+def perform_dorking(suspect_id, search_all=True, search_engines=['google', 'bing']):
     """
     Perform dorking for a suspect with specified options.
     """
+    # Load suspect details
+    suspect_folder = create_suspect_folder(suspect_id)
+    details_file = os.path.join(suspect_folder, 'details.json')
+    with open(details_file, 'r', encoding='utf-8') as f:
+        suspect_details = json.load(f)
+    suspect_name = suspect_details['name']
+
     # Generate name variants
     name_variants = generate_name_variants(suspect_name) if search_all else [suspect_name]
 
@@ -461,17 +405,9 @@ def perform_dorking(suspect_name, search_all=True, search_engines=['google', 'bi
     search_types = []
     for engine in search_engines:
         if engine.lower() == 'google':
-            search_types.extend([
-                {'engine': 'google', 'type': 'web_pages', 'query': '"{name}"'},
-                {'engine': 'google', 'type': 'documents', 'query': '"{name}" filetype:pdf'},
-                {'engine': 'google', 'type': 'images', 'query': '"{name}"', 'search_type': 'image'},
-                {'engine': 'google', 'type': 'web_pages', 'query': '"{name}" site:linkedin.com'}
-            ])
+            search_types.extend(['google_web_pages', 'google_images', 'google_documents'])
         elif engine.lower() == 'bing':
-            search_types.append({'engine': 'bing', 'type': 'web_pages', 'query': '"{name}"'})
-
-    # Create suspect folder
-    suspect_folder = create_suspect_folder(suspect_name)
+            search_types.append('bing_web_pages')
 
     # Load cache
     cache = load_cache(suspect_folder)
@@ -490,7 +426,8 @@ def perform_dorking(suspect_name, search_all=True, search_engines=['google', 'bi
         search_types=search_types,
         suspect_folder=suspect_folder,
         cache=cache,
-        all_details=all_details
+        all_details=all_details,
+        total_results=50
     )
 
     # Process and save all collected results
@@ -501,4 +438,4 @@ def perform_dorking(suspect_name, search_all=True, search_engines=['google', 'bi
     results_file = os.path.join(suspect_folder, 'results.json')
     save_to_json(all_details, filename=results_file)
 
-    print(f"Dorking completed for {suspect_name}.")
+    print(f"Dorking completed for suspect ID {suspect_id}.")
