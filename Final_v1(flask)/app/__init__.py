@@ -15,7 +15,7 @@ def create_app():
     # Serve index.html at '/'
     @app.route('/')
     def serve_index():
-        return send_from_directory(app.static_folder, 'index.html')
+        return send_from_directory(app.static_folder, 'login.html')
 
     # Serve static files (CSS, JS, images)
     @app.route('/static/<path:path>')

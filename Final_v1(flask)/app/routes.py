@@ -4,6 +4,7 @@ from app.services.dorking import (
     generate_name_variants,
     create_suspect_folder,
     load_cache,
+    perform_instagram_scraping,
     save_cache,
     perform_searches,
     process_results,
@@ -11,7 +12,6 @@ from app.services.dorking import (
     perform_dorking
 )
 import os
-import re
 import json
 import shutil
 import threading
@@ -31,16 +31,32 @@ def add_suspect():
         if not suspect_name:
             return jsonify({"status": "error", "error": "Suspect name is required."}), 400
 
-        # Generate unique suspect ID
+        # Path to the suspects.json file
+        suspects_file = os.path.join('suspects', 'suspects.json')
+
+        # Load existing suspects
+        if os.path.exists(suspects_file):
+            with open(suspects_file, 'r', encoding='utf-8') as f:
+                suspects = json.load(f)
+        else:
+            suspects = []
+
+        # Check if the suspect already exists
+        for suspect in suspects:
+            if suspect['name'].lower() == suspect_name.lower():
+                return jsonify({
+                    "status": "exists",
+                    "message": "Suspect already exists.",
+                    "suspect_id": suspect['id']
+                }), 200
+
+        # Generate a unique suspect ID
         suspect_id = str(uuid.uuid4())
 
-        suspect_folder = os.path.join('suspects', suspect_id)
+        # Create suspect folder
+        suspect_folder = create_suspect_folder(suspect_id)
 
-        if os.path.exists(suspect_folder):
-            return jsonify({"status": "exists", "message": "Suspect already exists.", "suspect_id": suspect_id}), 200
-
-        create_suspect_folder(suspect_id)
-
+        # Save suspect details
         suspect_details = {
             "id": suspect_id,
             "name": suspect_name,
@@ -52,10 +68,20 @@ def add_suspect():
         with open(details_file, 'w', encoding='utf-8') as f:
             json.dump(suspect_details, f, ensure_ascii=False, indent=4)
 
+        # Append new suspect to the suspects list and save it
+        suspects.append(suspect_details)
+        with open(suspects_file, 'w', encoding='utf-8') as f:
+            json.dump(suspects, f, ensure_ascii=False, indent=4)
+
+        # Initialize cache
         cache = load_cache(suspect_folder)
         save_cache(suspect_folder, cache)
 
-        return jsonify({"status": "success", "message": f"Suspect '{suspect_name}' added successfully.", "suspect_id": suspect_id}), 200
+        return jsonify({
+            "status": "success",
+            "message": f"Suspect '{suspect_name}' added successfully.",
+            "suspect_id": suspect_id
+        }), 200
 
     except Exception as e:
         return jsonify({"status": "error", "error": str(e)}), 500
@@ -134,13 +160,11 @@ def get_results():
         results_file = os.path.join(suspect_folder, 'results.json')
 
         if not os.path.exists(results_file):
-            return jsonify({"status": "error", "error": "Results not found for the given suspect."}), 404
+            # Indicate that the results are still being processed
+            return jsonify({"status": "processing", "message": "Results are being processed."}), 202
 
-        try:
-            with open(results_file, 'r', encoding='utf-8') as f:
-                results_data = json.load(f)
-        except json.JSONDecodeError:
-            return jsonify({"status": "error", "error": "Results file is corrupted."}), 500
+        with open(results_file, 'r', encoding='utf-8') as f:
+            results_data = json.load(f)
 
         return jsonify({"status": "success", "data": results_data}), 200
 
@@ -162,6 +186,11 @@ def dork_suspect():
 
         if not os.path.exists(suspect_folder):
             return jsonify({"status": "error", "error": "Suspect not found. Please add the suspect first."}), 404
+
+        # Clear existing results before re-scraping
+        results_file = os.path.join(suspect_folder, 'results.json')
+        if os.path.exists(results_file):
+            os.remove(results_file)
 
         def run_dorking():
             try:
@@ -216,6 +245,36 @@ def get_suspect():
             suspect_details = json.load(f)
 
         return jsonify({"status": "success", "data": suspect_details}), 200
+
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+@api.route('/instagram-scrape', methods=['POST'])
+def instagram_scrape():
+    try:
+        data = request.json
+        suspect_id = data.get('suspect_id')
+
+        if not suspect_id:
+            return jsonify({"status": "error", "error": "Suspect ID is required."}), 400
+
+        suspect_folder = os.path.join('suspects', suspect_id)
+        details_file = os.path.join(suspect_folder, 'details.json')
+
+        if not os.path.exists(details_file):
+            return jsonify({"status": "error", "error": "Suspect details not found."}), 404
+
+        with open(details_file, 'r', encoding='utf-8') as f:
+            suspect_details = json.load(f)
+
+        suspect_name = suspect_details.get('name')
+        if not suspect_name:
+            return jsonify({"status": "error", "error": "Suspect name not found."}), 400
+
+        # Perform Instagram Scraping
+        instagram_data = perform_instagram_scraping(suspect_name)
+
+        return jsonify({"status": "success", "data": instagram_data}), 200
 
     except Exception as e:
         return jsonify({"status": "error", "error": str(e)}), 500
