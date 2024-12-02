@@ -1,4 +1,0 @@
-npm install express
-npm install body-parser
-cd <Location>
-node server.js
