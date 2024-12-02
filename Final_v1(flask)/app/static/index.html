@@ -11,481 +11,46 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet" />
     <!-- Styles -->
-    <style>
-        /* General styles */
-        body {
-            margin: 0;
-            font-family: 'Ubuntu', sans-serif;
-            background-color: #1e2a38;
-            color: #ffffff;
-        }
-        .container {
-            display: flex;
-            height: 100vh;
-        }
-        /* Sidebar styles (Left Side) */
-        .sidebar {
-            width: 300px;
-            background-color: #2b3a4b;
-            padding: 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
-        .sidebar h1 {
-            font-size: 22px;
-            margin-bottom: 20px;
-            color: #58a6ff;
-            text-align: center;
-        }
-        .sidebar h1 i {
-            margin-right: 10px;
-        }
-        .sidebar .section {
-            margin-bottom: 20px;
-        }
-        .sidebar .section h2 {
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: #58a6ff;
-        }
-        .sidebar .section p {
-            margin: 5px 0;
-        }
-        /* Added frame to overview section */
-        .overview-frame {
-            border: 1px solid #58a6ff;
-            padding: 15px;
-            border-radius: 5px;
-        }
-        /* Main content styles */
-        .main-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .main-content .header input {
-            width: 60%;
-            padding: 8px;
-            background-color: #1e2a38;
-            border: 1px solid #3a4a5b;
-            border-radius: 5px;
-            color: #ffffff;
-        }
-        .main-content .header {
-            background-color: #2b3a4b;
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative; /* Ensure positioning context */
-        }
+    <link rel="stylesheet" href="css/main.css">
+    <!-- Firebase SDKs (v8) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+      <!-- Firebase Initialization -->
+      <script>
+        // Your Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyDZx8uWNQUVx6uuW2834DCMSnVD4yAsM2Q",
+            authDomain: "shadowbyte-c0b66.firebaseapp.com",
+            projectId: "shadowbyte-c0b66",
+            storageBucket: "shadowbyte-c0b66.appspot.com",
+            messagingSenderId: "837344026144",
+            appId: "1:837344026144:web:2a2b67a9090eafcd8ea645",
+            measurementId: "G-QTGZHNPB9P"
+        };
 
-        .main-content .header .header-right {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .main-content .header .buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .main-content .header .buttons button {
-            background-color: #1e2a38;
-            color: #ffffff;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            display: flex;
-            align-items: center;
-        }
-
-        .main-content .header .buttons button i {
-            margin-right: 5px;
-        }
-
-        .main-content .header .buttons button:hover {
-            background-color: #32495b;
-        }
-
-        .main-content .header .profile-icon {
-            font-size: 28px;
-            cursor: pointer;
-            color: #ffffff;
-            margin-left: auto;
-        }
-        .main-content .graph {
-            flex-grow: 1;
-            position: relative;
-        }
-        #cy {
-            width: 100%;
-            height: 100%;
-        }
-        .profile-icon {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            font-size: 28px;
-            cursor: pointer;
-            color: #ffffff;
-            z-index: 1001;
-        }
-
-        /* Footer styles */
-        .footer {
-            background-color: #2b3a4b;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .footer a {
-            color: #ffffff;
-            text-decoration: none;
-        }
-        .footer a i {
-            margin-right: 5px;
-        }
-        .footer div a i {
-            margin-right: 5px;
-        }
-        /* Tool panel styles (Right Side) */
-        .tool-panel {
-            width: 300px;
-            background-color: #2b3a4b;
-            padding: 30px 20px 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
-        .tool-panel .category {
-            margin-bottom: 20px;
-        }
-        .tool-panel .category h2 {
-            font-size: 18px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            background-color: #1e2a38;
-            padding: 10px;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .tool-panel .category h2 i {
-            margin-right: 10px;
-        }
-        .tool-panel .category h2:hover {
-            background-color: #3a4a5b;
-        }
-        .tool-panel .tool-list {
-            margin-top: 10px;
-            padding-left: 20px;
-            display: none;
-        }
-        .tool-panel .tool-list button {
-            width: 100%;
-            background-color: #1e2a38;
-            color: #ffffff;
-            border: none;
-            padding: 10px;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-            cursor: pointer;
-        }
-        .tool-panel .tool-list button i {
-            margin-right: 10px;
-            color: #58a6ff;
-        }
-        .tool-panel .tool-list button:hover {
-            background-color: #32495b;
-        }
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.7);
-        }
-        .modal-content {
-            background-color: #2b3a4b;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 400px;
-            border-radius: 10px;
-            color: #ffffff;
-        }
-        .modal-content h2 {
-            margin-top: 0;
-            color: #58a6ff;
-        }
-        .modal-content label {
-            display: block;
-            margin: 15px 0 5px;
-        }
-
-        .modal-content input, .modal-content select {
-            width: 100%;
-            padding: 8px;
-            background-color: #1e2a38;
-            border: 1px solid #3a4a5b;
-            border-radius: 5px;
-            color: #ffffff;
-        }
-        .modal-content .buttons {
-            margin-top: 20px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-        .modal-content .buttons button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .modal-content .buttons .cancel {
-            background-color: #555;
-            color: #fff;
-        }
-        .modal-content .buttons .submit {
-            background-color: #58a6ff;
-            color: #fff;
-        }
-        .modal-content .buttons button:hover {
-            opacity: 0.8;
-        }
-        /* Suspect detail modal */
-        .detail-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.7);
-        }
-        .detail-modal-content {
-            background-color: #2b3a4b;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 400px;
-            border-radius: 10px;
-            color: #ffffff;
-        }
-        .detail-modal-content h2 {
-            margin-top: 0;
-            color: #58a6ff;
-        }
-        /* Updated: Separate sections for suspect and result details */
-        .detail-modal-content #suspect-details,
-        .detail-modal-content #result-details {
-            margin-bottom: 15px;
-        }
-        .detail-modal-content #result-details a {
-            color: #58a6ff;
-            text-decoration: none;
-        }
-        .detail-modal-content #result-details a:hover {
-            text-decoration: underline;
-        }
-        .detail-modal-content label {
-            display: block;
-            margin: 10px 0 5px;
-        }
-
-        .detail-modal-content p span {
-            font-weight: bold;
-        }
-        .detail-modal-content .close-btn {
-            margin-top: 20px;
-            display: flex;
-            justify-content: flex-end;
-        }
-        .detail-modal-content .close-btn button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            background-color: #58a6ff;
-            color: #fff;
-        }
-        .detail-modal-content .close-btn button:hover {
-            opacity: 0.8;
-        }
-        /* Account modal styles */
-        .account-modal {
-            display: none;
-            position: fixed;
-            z-index: 1001;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.7);
-        }
-        .account-modal-content {
-            background-color: #2b3a4b;
-            margin: 10% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 300px;
-            border-radius: 10px;
-            color: #ffffff;
-            text-align: center;
-        }
-        .account-modal-content h2 {
-            margin-top: 0;
-            color: #58a6ff;
-        }
-        .account-modal-content p {
-            margin: 15px 0;
-        }
-        .account-modal-content button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            background-color: #58a6ff;
-            color: #fff;
-            margin-top: 20px;
-        }
-        .account-modal-content button:hover {
-            opacity: 0.8;
-        }
-        /* Modal for Dork Suspect Options */
-        #dork-modal .modal-content label {
-            margin: 10px 0 5px;
-        }
-        #dork-modal .modal-content .tool-list {
-            padding-left: 20px;
-        }
-        /* Modal for Existing Suspect */
-        #existing-suspect-modal .modal-content p span {
-            font-weight: bold;
-        }
-        /* Image Preview Modal */
-        #image-preview-modal {
-            display: none;
-            position: fixed;
-            z-index: 1002;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.8);
-        }
-        #image-preview-content {
-            background-color: #2b3a4b;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 600px;
-            border-radius: 10px;
-            color: #ffffff;
-            text-align: center;
-        }
-        #image-preview-content img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
-        #image-preview-content .close-btn {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        #image-preview-content .close-btn button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            background-color: #58a6ff;
-            color: #fff;
-        }
-        #image-preview-content .close-btn button:hover {
-            opacity: 0.8;
-        }
-
-        /* Custom Context Menu Styles */
-        #context-menu {
-            display: none;
-            position: absolute;
-            z-index: 10000;
-            width: 150px;
-            background-color: #2b3a4b;
-            border: 1px solid #555;
-            border-radius: 5px;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-        }
-
-        #context-menu ul {
-            list-style: none;
-            padding: 5px 0;
-            margin: 0;
-        }
-
-        #context-menu ul li {
-            padding: 8px 12px;
-            cursor: pointer;
-            color: #fff;
-        }
-
-        #context-menu ul li:hover {
-            background-color: #32495b;
-        }
-        /* Context Menu Styles */
-        #context-menu {
-            display: none;
-            position: absolute;
-            z-index: 1000;
-            width: 150px;
-            background-color: #17264a;
-            border: 1px solid #ccc;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-        }
-        #context-menu ul {
-            list-style: none;
-            padding: 5px 0;
-            margin: 0;
-        }
-        #context-menu ul li {
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-        #context-menu ul li:hover {
-            background-color: #f0f0f0;
-        }
-    </style>
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        var auth = firebase.auth();
+        var db = firebase.firestore();
+    </script>
 </head>
 <body>
     <div class="container">
         <!-- Sidebar (Left Side) -->
         <div class="sidebar">
-            <h1><i class="fas fa-user-secret"></i> Suspect Network</h1>
+            <h1><i class="fas fa-user-secret"></i> ShadowByte</h1>
             <div class="section overview-frame">
                 <h2>Overall Details</h2>
                 <p>Total Suspects: <span id="total-suspects">0</span></p>
                 <p>Total Connections: <span id="total-connections">0</span></p>
+            </div>
+            <!-- New Suspects List Section -->
+            <div class="section suspects-list">
+                <h2><i class="fas fa-list"></i> Suspects List</h2>
+                <div class="suspects-container" id="suspects-container">
+                    <!-- Suspect items will be dynamically populated here -->
+                </div>
             </div>
         </div>
         <!-- Main Content -->
@@ -505,12 +70,11 @@
             <div class="footer">
                 <a href="#"><i class="fas fa-server"></i> API requests: <span id="api-requests">0</span></a>
                 <div>
-                    <a href="#"><i class="fas fa-book"></i> Documentation</a> |
-                    <a href="#"><i class="fas fa-code"></i> API</a> |
-                    <a href="#"><i class="fas fa-comment"></i> Send feedback</a>
+                    <a href="documenttaion.html"><i class="fas fa-book"></i> Documentation</a>
                 </div>
             </div>
         </div>
+
         <!-- Profile Icon -->
         <i class="fas fa-user-circle profile-icon" id="profile-icon"></i>
         <!-- Tool Panel (Right Side) -->
@@ -533,6 +97,8 @@
                     <button id="api-integration"><i class="fas fa-plug"></i> API Integration</button>
                     <button id="social-media-scraping"><i class="fas fa-hashtag"></i> Social Media Scraping</button>
                     <button id="dork-suspect"><i class="fas fa-magnifying-glass"></i> Dork Suspect</button>
+                    <!-- New Instagram Scraping Button -->
+                    <button id="instagram-scraping"><i class="fab fa-instagram"></i> Instagram Scraping</button>
                 </div>
             </div>
             <div class="category">
@@ -553,6 +119,7 @@
             </div>
         </div>
     </div>
+    <!-- Modals -->
     <!-- Modal for Adding Node -->
     <div id="node-modal" class="modal">
         <div class="modal-content">
@@ -597,6 +164,11 @@
                     <img id="preview-image-full" src="" alt="Image Preview" />
                 </div>
             </div>
+            <!-- Instagram Details -->
+            <div id="instagram-details" style="display: none;">
+                <p><span>Username:</span> <span id="detail-username"></span></p>
+                <p><span>Profile URL:</span> <a href="#" id="detail-profile-url" target="_blank">View Profile</a></p>
+            </div>
             <div class="close-btn">
                 <button id="close-detail-modal">Close</button>
             </div>
@@ -616,12 +188,13 @@
     <div id="account-modal" class="account-modal">
         <div class="account-modal-content">
             <h2>Account Details</h2>
-            <p><strong>Username:</strong> user123</p>
-            <p><strong>Email:</strong> user@example.com</p>
+            <p><strong>Username:</strong> <span id="account-username">Loading...</span></p>
+            <p><strong>Email:</strong> <span id="account-email">Loading...</span></p>
             <!-- Add more account details as needed -->
             <button id="logout-button-modal">Logout</button>
         </div>
     </div>
+
     <!-- Modal for Dork Suspect Options -->
     <div id="dork-modal" class="modal">
         <div class="modal-content">
@@ -663,6 +236,17 @@
             </div>
         </div>
     </div>
+    <!-- Modal for Instagram Scraping -->
+    <div id="instagram-modal" class="modal">
+        <div class="modal-content">
+            <h2>Instagram Scraping</h2>
+            <p>Please select a suspect to perform Instagram scraping.</p>
+            <div class="buttons">
+                <button type="button" class="cancel" id="instagram-cancel-button">Cancel</button>
+                <button type="button" class="submit" id="instagram-confirm-button">Start Scraping</button>
+            </div>
+        </div>
+    </div>
     <!-- Polling Message -->
     <div id="polling-message" style="display: none; color: #fff; text-align: center; padding: 10px; background-color: rgba(0, 0, 0, 0.5); position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1003;">
         Scraping in progress...
@@ -670,7 +254,7 @@
 
     <div id="context-menu">
         <ul>
-            <li id="context-dorking">Dorking</li>
+            <li id="context-dorking">Investigate</li>
             <li id="context-delete">Delete Node</li>
         </ul>
     </div>
@@ -679,6 +263,8 @@
         var existingSuspectName = '';
         var existingSuspectId = '';
         var dorkingSuspect = null;
+        var selectedSuspect = null;
+        var apiRequestCount = 0;
 
         document.querySelectorAll('.tool-panel .category h2').forEach(header => {
             header.addEventListener('click', () => {
@@ -686,7 +272,7 @@
                 toolList.style.display = toolList.style.display === 'block' ? 'none' : 'block';
             });
         });
-    
+
         document.addEventListener('DOMContentLoaded', function() {
             var cy = cytoscape({
                 container: document.getElementById('cy'),
@@ -728,6 +314,18 @@
                         }
                     },
                     {
+                        selector: 'node[type="instagram"]',
+                        style: {
+                            'background-color': '#E1306C',
+                            'shape': 'roundrectangle',
+                            'label': 'data(label)',
+                            'font-size': '12px',
+                            'color': '#fff',
+                            'text-valign': 'center',
+                            'text-halign': 'center'
+                        }
+                    },
+                    {
                         selector: 'edge[type="method-connection"]',
                         style: {
                             'line-color': '#ff5722',
@@ -750,6 +348,15 @@
                         style: {
                             'line-color': '#4caf50',
                             'target-arrow-color': '#4caf50',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier'
+                        }
+                    },
+                    {
+                        selector: 'edge[type="instagram-connection"]',
+                        style: {
+                            'line-color': '#E1306C',
+                            'target-arrow-color': '#E1306C',
                             'target-arrow-shape': 'triangle',
                             'curve-style': 'bezier'
                         }
@@ -876,8 +483,17 @@
                             'border-width': 2,
                             'border-color': '#ffffff'
                         }
+                    },
+                    {
+                        selector: '.highlighted',
+                        style: {
+                            'background-color': '#FFD700', // Gold color for highlighting
+                            'border-color': '#000',
+                            'border-width': 4,
+                            'z-index': 10,
+                            'overlay-opacity': 0
+                        }
                     }
-
                 ],
                 elements: [],
                 layout: {
@@ -885,46 +501,88 @@
                     padding: 10
                 }
             });
-    
-            let apiRequestCount = 0;
-    
+
+            // Debounce function to limit the rate of search execution
+            function debounce(func, delay) {
+                let debounceTimer;
+                return function() {
+                    const context = this;
+                    const args = arguments;
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => func.apply(context, args), delay);
+                };
+            }
+
+            // Enhanced Search Function Implementation
+            const searchInput = document.getElementById('search');
+
+            searchInput.addEventListener('input', debounce(function() {
+                const query = this.value.trim().toLowerCase();
+
+                // Reset all nodes to default style by removing 'highlighted' class
+                cy.nodes().removeClass('highlighted');
+
+                if (query === '') return;
+
+                // Find matching nodes across multiple fields
+                const matchingNodes = cy.nodes().filter(node => {
+                    const label = node.data('label') || '';
+                    const email = node.data('email') || '';
+                    const nic = node.data('nic') || '';
+                    const socialMedia = node.data('socialMedia') || '';
+                    return label.toLowerCase().includes(query) ||
+                           email.toLowerCase().includes(query) ||
+                           nic.toLowerCase().includes(query) ||
+                           socialMedia.toLowerCase().includes(query);
+                });
+
+                // Highlight matching nodes
+                matchingNodes.addClass('highlighted');
+
+                // Optionally, fit the view to the matching nodes
+                if (matchingNodes.length > 0) {
+                    cy.fit(matchingNodes, 50);
+                }
+            }, 300)); // 300ms debounce delay
+
+            // Existing JavaScript code continues here...
+
+            // Example: Handling Add Node Modal
             var addModal = document.getElementById('node-modal');
             var form = document.getElementById('node-form');
             var nodeCancelBtn = document.getElementById('node-cancel-button');
-    
+
             var contextMenu = document.getElementById('context-menu');
             var contextDorking = document.getElementById('context-dorking');
             var contextDelete = document.getElementById('context-delete');
-    
-            var selectedSuspect = null;
-    
+
             // Open modal on 'Add Node' click
             document.getElementById('add-node').addEventListener('click', function() {
                 addModal.style.display = 'block';
             });
-    
+
             // Close node modal on 'Cancel' click
             nodeCancelBtn.addEventListener('click', function() {
                 addModal.style.display = 'none';
                 form.reset();
             });
-    
+
             // Handle form submission
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
-    
+
                 var fullName = document.getElementById('full-name').value.trim();
                 var email = document.getElementById('email').value.trim();
                 var nic = document.getElementById('nic').value.trim();
                 var socialMedia = document.getElementById('social-media').value.trim();
-    
+
                 var suspectData = {
                     suspect_name: fullName,
                     email: email,
                     nic: nic,
                     social_media: socialMedia
                 };
-    
+
                 fetch('/api/add-suspect', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -936,7 +594,7 @@
                         alert(data.message);
                         apiRequestCount += 1;
                         document.getElementById('api-requests').innerText = apiRequestCount;
-    
+
                         cy.add({
                             group: 'nodes',
                             data: {
@@ -948,11 +606,11 @@
                                 type: 'suspect'
                             }
                         });
-    
+
                         cy.layout({ name: 'cose', padding: 10, animate: true }).run();
-    
-                        document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
-                        document.getElementById('total-connections').innerText = cy.edges().length;
+
+                        updateCounts();
+                        updateSuspectsList();
                     } else if (data.status === 'exists') {
                         existingSuspectId = data.suspect_id;
                         existingSuspectName = fullName;
@@ -965,11 +623,11 @@
                     console.error('Error:', error);
                     alert('An error occurred while adding the suspect.');
                 });
-    
+
                 addModal.style.display = 'none';
                 form.reset();
             });
-    
+
             // Delete node functionality
             document.getElementById('delete-node').addEventListener('click', function() {
                 var selectedNodes = cy.$(':selected');
@@ -993,40 +651,41 @@
                             .catch(error => {
                                 console.error('Error:', error);
                             });
-    
+
                             cy.remove(node);
                         });
-    
-                        document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
-                        document.getElementById('total-connections').innerText = cy.edges().length;
+
+                        updateCounts();
+                        updateSuspectsList();
                     }
                 } else {
                     alert('Please select a suspect to delete.');
                 }
             });
-    
+
             // Suspect detail modal elements
             var detailModal = document.getElementById('detail-modal');
             var closeDetailBtn = document.getElementById('close-detail-modal');
-    
+
             // Image preview modal elements
             var imagePreviewModal = document.getElementById('image-preview-modal');
             var closeImagePreviewBtn = document.getElementById('close-image-preview');
-    
+
             // Node selection and detail display
             cy.on('tap', 'node', function(evt){
                 var node = evt.target;
                 cy.$('node').unselect();
                 node.select();
-    
+
                 var type = node.data('type');
-    
+
                 if(type === 'suspect') {
                     selectedSuspect = node.data();
-    
+
                     document.getElementById('suspect-details').style.display = 'block';
                     document.getElementById('result-details').style.display = 'none';
-    
+                    document.getElementById('instagram-details').style.display = 'none';
+
                     document.getElementById('detail-id').innerText = node.data('id') || 'N/A';
                     document.getElementById('detail-fullname').innerText = node.data('label') || 'N/A';
                     document.getElementById('detail-email').innerText = node.data('email') || 'N/A';
@@ -1036,7 +695,8 @@
                 else if(type === 'source') {
                     document.getElementById('suspect-details').style.display = 'none';
                     document.getElementById('result-details').style.display = 'block';
-    
+                    document.getElementById('instagram-details').style.display = 'none';
+
                     document.getElementById('detail-title').innerText = node.data('label') || 'Source';
                     var linkElement = document.getElementById('detail-link');
                     linkElement.href = '#';
@@ -1048,14 +708,15 @@
                 else if(type === 'result') {
                     document.getElementById('suspect-details').style.display = 'none';
                     document.getElementById('result-details').style.display = 'block';
-    
+                    document.getElementById('instagram-details').style.display = 'none';
+
                     document.getElementById('detail-title').innerText = node.data('label') || 'N/A';
                     var linkElement = document.getElementById('detail-link');
                     linkElement.href = node.data('link') || '#';
                     linkElement.innerText = node.data('link') ? 'View Link' : 'N/A';
                     document.getElementById('detail-snippet').innerText = node.data('snippet') || 'N/A';
                     document.getElementById('detail-category').innerText = node.data('category') || 'N/A';
-    
+
                     if(node.data('category') === 'google_images' && node.data('image_url')) {
                         document.getElementById('preview-image-full').src = node.data('image_url');
                         imagePreviewModal.style.display = 'block';
@@ -1063,21 +724,41 @@
                         document.getElementById('image-preview').style.display = 'none';
                     }
                 }
-    
+                else if(type === 'instagram') {
+                    document.getElementById('suspect-details').style.display = 'none';
+                    document.getElementById('result-details').style.display = 'none';
+                    document.getElementById('instagram-details').style.display = 'block';
+
+                    document.getElementById('detail-username').innerText = node.data('username') || 'N/A';
+                    var profileUrlElement = document.getElementById('detail-profile-url');
+                    profileUrlElement.href = node.data('profile_url') || '#';
+                    profileUrlElement.innerText = 'View Profile';
+                }
+
                 detailModal.style.display = 'block';
             });
-    
+
+            // Add event listener for the 'Dork Suspect' button
+            document.getElementById('dork-suspect').addEventListener('click', function() {
+                if (!selectedSuspect || !selectedSuspect.id) {
+                    alert('Please select a suspect to perform dorking.');
+                    return;
+                }
+                dorkingSuspect = selectedSuspect;
+                dorkModal.style.display = 'block';
+            });
+
             // Close detail modal
             closeDetailBtn.addEventListener('click', function() {
                 detailModal.style.display = 'none';
                 document.getElementById('image-preview').style.display = 'none';
             });
-    
+
             // Close image preview modal
             closeImagePreviewBtn.addEventListener('click', function() {
                 imagePreviewModal.style.display = 'none';
             });
-    
+
             // Right-click context menu
             cy.on('cxttap', 'node', function(evt){
                 var node = evt.target;
@@ -1087,7 +768,7 @@
                 contextMenu.style.top = evt.originalEvent.pageY + 'px';
                 contextMenu.currentNode = node;
             });
-    
+
             // Handle context menu actions
             contextDorking.addEventListener('click', function() {
                 var node = contextMenu.currentNode;
@@ -1097,7 +778,7 @@
                 }
                 contextMenu.style.display = 'none';
             });
-    
+
             contextDelete.addEventListener('click', function() {
                 var node = contextMenu.currentNode;
                 if(node) {
@@ -1112,8 +793,8 @@
                         .then(data => {
                             if (data.status === 'success') {
                                 cy.remove(node);
-                                document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
-                                document.getElementById('total-connections').innerText = cy.edges().length;
+                                updateCounts();
+                                updateSuspectsList();
                             } else {
                                 alert(`Error: ${data.error}`);
                             }
@@ -1126,26 +807,23 @@
                 }
                 contextMenu.style.display = 'none';
             });
-    
+
             // Close context menu on click elsewhere
             document.addEventListener('click', function(e) {
                 if (!contextMenu.contains(e.target)) {
                     contextMenu.style.display = 'none';
                 }
             });
-    
-            // Initialize Selected Suspect
-            selectedSuspect = null;
-    
+
             // Modal elements for Dork Suspect
             var dorkModal = document.getElementById('dork-modal');
             var dorkForm = document.getElementById('dork-form');
             var dorkCancelBtn = document.getElementById('dork-cancel-button');
-    
+
             // Handle Dork Suspect form submission
             dorkForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-    
+
                 var searchAll = document.getElementById('search-all').value;
                 var searchEngines = [];
                 if (document.getElementById('google').checked) {
@@ -1154,23 +832,23 @@
                 if (document.getElementById('bing').checked) {
                     searchEngines.push('bing');
                 }
-    
+
                 if (searchEngines.length === 0) {
                     alert('Please select at least one search engine.');
                     return;
                 }
-    
+
                 if (!dorkingSuspect) {
                     alert('No suspect selected for dorking.');
                     return;
                 }
-    
+
                 var dorkData = {
                     suspect_id: dorkingSuspect.id,
                     search_all: searchAll === 'yes',
                     search_engines: searchEngines
                 };
-    
+
                 fetch('/api/dork-suspect', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1182,7 +860,7 @@
                         alert(`Dorking initiated for ${dorkingSuspect.label}.`);
                         apiRequestCount += 1;
                         document.getElementById('api-requests').innerText = apiRequestCount;
-    
+
                         pollForResults(dorkingSuspect.id, dorkingSuspect.label);
                     } else {
                         alert(`Error: ${data.error}`);
@@ -1192,28 +870,132 @@
                     console.error('Error:', error);
                     alert('An error occurred while initiating dorking.');
                 });
-    
+
                 dorkModal.style.display = 'none';
                 dorkForm.reset();
             });
-    
+
             // Close Dork Modal on 'Cancel'
             dorkCancelBtn.addEventListener('click', function() {
                 dorkModal.style.display = 'none';
                 dorkForm.reset();
             });
-    
+
+            // Modal elements for Instagram Scraping
+            var instagramModal = document.getElementById('instagram-modal');
+            var instagramCancelBtn = document.getElementById('instagram-cancel-button');
+            var instagramConfirmBtn = document.getElementById('instagram-confirm-button');
+
+            // Open Instagram Scraping Modal
+            document.getElementById('instagram-scraping').addEventListener('click', function() {
+                if (!selectedSuspect || !selectedSuspect.id) {
+                    alert('Please select a suspect to perform Instagram scraping.');
+                    return;
+                }
+                instagramModal.style.display = 'block';
+            });
+
+            // Handle Instagram Scraping Confirmation
+            instagramConfirmBtn.addEventListener('click', function() {
+                if (!selectedSuspect || !selectedSuspect.id) {
+                    alert('Please select a suspect to perform Instagram scraping.');
+                    instagramModal.style.display = 'none';
+                    return;
+                }
+
+                var suspectId = selectedSuspect.id;
+
+                fetch('/api/instagram-scrape', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ suspect_id: suspectId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Instagram scraping completed successfully.');
+                        processInstagramResults(data.data, suspectId);
+                        apiRequestCount += 1;
+                        document.getElementById('api-requests').innerText = apiRequestCount;
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while performing Instagram scraping.');
+                });
+
+                instagramModal.style.display = 'none';
+            });
+
+            // Close Instagram Modal on 'Cancel'
+            instagramCancelBtn.addEventListener('click', function() {
+                instagramModal.style.display = 'none';
+            });
+
+            // Function to process Instagram results and update the graph
+            function processInstagramResults(results, suspectId) {
+                if (!results || results.length === 0) {
+                    alert('No Instagram accounts found.');
+                    return;
+                }
+
+                let newNodes = [];
+                let newEdges = [];
+
+                results.forEach(item => {
+                    const instaNodeId = `instagram-${item.username}`;
+                    if (cy.getElementById(instaNodeId).length === 0) {
+                        newNodes.push({
+                            group: 'nodes',
+                            data: {
+                                id: instaNodeId,
+                                label: item.username,
+                                username: item.username,
+                                profile_url: item.link,
+                                type: 'instagram'
+                            }
+                        });
+
+                        newEdges.push({
+                            group: 'edges',
+                            data: {
+                                source: suspectId,
+                                target: instaNodeId,
+                                type: 'instagram-connection'
+                            }
+                        });
+                    }
+                });
+
+                if (newNodes.length > 0) {
+                    cy.add(newNodes);
+                    console.log(`Added ${newNodes.length} new Instagram nodes.`);
+                }
+
+                if (newEdges.length > 0) {
+                    cy.add(newEdges);
+                    console.log(`Added ${newEdges.length} new Instagram edges.`);
+                }
+
+                cy.layout({ name: 'cose', padding: 10, animate: true }).run();
+
+                updateCounts();
+                updateSuspectsList();
+            }
+
             // Modal for Existing Suspect
             var existingSuspectModal = document.getElementById('existing-suspect-modal');
             var useExistingBtn = document.getElementById('use-existing');
             var scrapeAgainBtn = document.getElementById('scrape-again');
-    
-            function openExistingSuspectModal(suspectId, suspectName) {
+
+            function openExistingSuspectModal(suspect_id, suspect_name) {
                 existingSuspectModal.style.display = 'block';
-                document.getElementById('existing-suspect-name').innerText = suspectName;
-                existingSuspectId = suspectId;
+                document.getElementById('existing-suspect-name').innerText = suspect_name;
+                existingSuspectId = suspect_id;
             }
-    
+
             useExistingBtn.addEventListener('click', function() {
                 existingSuspectModal.style.display = 'none';
                 fetch(`/api/get-results?suspect_id=${encodeURIComponent(existingSuspectId)}`)
@@ -1222,10 +1004,10 @@
                     if (resultsData.status === 'success') {
                         processResultsData(resultsData.data, existingSuspectId, existingSuspectName);
                         alert(`Loaded existing data for ${existingSuspectName}.`);
-                        document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
-                        document.getElementById('total-connections').innerText = cy.edges().length;
+                        updateCounts();
+                        updateSuspectsList();
                     } else {
-                        alert(`Error: ${resultsData.error}`);
+                        alert(`Error: ${resultsData.error || 'No existing data found.'}`);
                     }
                 })
                 .catch(error => {
@@ -1233,7 +1015,7 @@
                     alert('An error occurred while fetching existing data.');
                 });
             });
-    
+
             scrapeAgainBtn.addEventListener('click', function() {
                 existingSuspectModal.style.display = 'none';
                 fetch('/api/dork-suspect', {
@@ -1251,7 +1033,7 @@
                         alert(`Dorking initiated again for ${existingSuspectName}.`);
                         apiRequestCount += 1;
                         document.getElementById('api-requests').innerText = apiRequestCount;
-    
+
                         pollForResults(existingSuspectId, existingSuspectName);
                     } else {
                         alert(`Error: ${data.error}`);
@@ -1262,21 +1044,21 @@
                     alert('An error occurred while initiating dorking.');
                 });
             });
-    
+
             // Profile icon functionality
             var profileIcon = document.getElementById('profile-icon');
             var accountModal = document.getElementById('account-modal');
             var logoutButtonModal = document.getElementById('logout-button-modal');
-    
+
             profileIcon.addEventListener('click', function() {
                 accountModal.style.display = 'block';
             });
-    
+
             logoutButtonModal.addEventListener('click', function() {
                 accountModal.style.display = 'none';
                 alert('Logged out successfully.');
             });
-    
+
             // Close modals when clicking outside of the content
             window.onclick = function(event) {
                 if (event.target == addModal) {
@@ -1299,11 +1081,14 @@
                 if (event.target == imagePreviewModal) {
                     imagePreviewModal.style.display = 'none';
                 }
+                if (event.target == instagramModal) {
+                    instagramModal.style.display = 'none';
+                }
                 if (!contextMenu.contains(event.target)) {
                     contextMenu.style.display = 'none';
                 }
             };
-    
+
             function pollForResults(suspectId, suspectName, interval = 5000, maxAttempts = 20) {
                 let attempts = 0;
                 let pollingMessage = document.getElementById('polling-message');
@@ -1313,7 +1098,7 @@
                 } else {
                     console.warn('Polling message element not found.');
                 }
-    
+
                 function checkResults() {
                     attempts++;
                     fetch(`/api/get-results?suspect_id=${encodeURIComponent(suspectId)}`)
@@ -1323,8 +1108,8 @@
                             pollingMessage.style.display = 'none';
                             processResultsData(resultsData.data, suspectId, suspectName);
                             alert(`Data loaded for ${suspectName}.`);
-                            document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
-                            document.getElementById('total-connections').innerText = cy.edges().length;
+                            updateCounts();
+                            updateSuspectsList();
                         } else {
                             if (attempts < maxAttempts) {
                                 setTimeout(checkResults, interval);
@@ -1344,12 +1129,15 @@
                         }
                     });
                 }
-    
+
                 checkResults();
             }
-    
+
             function processResultsData(data, suspectId, suspectName) {
                 try {
+                    if (!data) throw new Error("No data received.");
+
+                    // Ensure the suspect node exists
                     if (cy.getElementById(suspectId).length === 0) {
                         cy.add({
                             group: 'nodes',
@@ -1360,400 +1148,27 @@
                             }
                         });
                     }
-    
+
                     let newNodes = [];
                     let newEdges = [];
-    
-                    for (let method in data) {
-                        let methodItems = data[method];
-                        const methodNodeId = `method-${method.toLowerCase()}`;
-    
+
+                    for (let category in data) {
+                        let items = data[category];
+                        if (!Array.isArray(items)) continue;
+
+                        const methodNodeId = `method-${category.toLowerCase()}`;
+
+                        // Add method node if it doesn't exist
                         if (cy.getElementById(methodNodeId).length === 0) {
                             newNodes.push({
                                 group: 'nodes',
                                 data: {
                                     id: methodNodeId,
-                                    label: method.toUpperCase(),
-                                    type: 'method'
-                                }
-                            });
-    
-                            newEdges.push({
-                                group: 'edges',
-                                data: {
-                                    source: suspectId,
-                                    target: methodNodeId,
-                                    type: 'method-connection'
-                                }
-                            });
-                        }
-    
-                        let domainGroups = {};
-                        methodItems.forEach(item => {
-                            let domain = item.domain || 'unknown_domain';
-                            if (!domainGroups[domain]) {
-                                domainGroups[domain] = [];
-                            }
-                            domainGroups[domain].push(item);
-                        });
-    
-                        for (let domain in domainGroups) {
-                            let domainItems = domainGroups[domain];
-                            const domainNodeId = `domain-${method.toLowerCase()}-${domain.replace(/\./g, '-')}`;
-    
-                            if (cy.getElementById(domainNodeId).length === 0) {
-                                newNodes.push({
-                                    group: 'nodes',
-                                    data: {
-                                        id: domainNodeId,
-                                        label: domain,
-                                        type: 'domain',
-                                        method: method.toLowerCase()
-                                    }
-                                });
-    
-                                newEdges.push({
-                                    group: 'edges',
-                                    data: {
-                                        source: methodNodeId,
-                                        target: domainNodeId,
-                                        type: 'domain-connection'
-                                    }
-                                });
-                            }
-    
-                            domainItems.forEach(item => {
-                                let nodeId = generateUniqueId();
-    
-                                let label = item.title || item.link || 'Unknown';
-    
-                                if (item.link && cy.nodes(`[data-link="${item.link}"]`).length > 0) {
-                                    return;
-                                }
-    
-                                let nodeData = {
-                                    id: nodeId,
-                                    label: label,
-                                    link: item.link || '',
-                                    snippet: item.snippet || '',
-                                    category: item.category || 'N/A',
-                                    domain: domain,
-                                    method: method.toLowerCase(),
-                                    type: 'result',
-                                    image_url: item.image_url || ''
-                                };
-    
-                                newNodes.push({
-                                    group: 'nodes',
-                                    data: nodeData
-                                });
-    
-                                newEdges.push({
-                                    group: 'edges',
-                                    data: {
-                                        source: domainNodeId,
-                                        target: nodeId,
-                                        type: 'result-connection'
-                                    }
-                                });
-                            });
-                        }
-                    }
-    
-                    newNodes = Array.isArray(newNodes) ? newNodes : [newNodes];
-                    newEdges = Array.isArray(newEdges) ? newEdges : [newEdges];
-    
-                    cy.batch(() => {
-                        cy.add(newNodes);
-                        cy.add(newEdges);
-                    });
-    
-                    cy.layout({ name: 'cose', padding: 10, animate: true }).run();
-    
-                    document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
-                    document.getElementById('total-connections').innerText = cy.edges().length;
-    
-                    console.log('Results data processed and graph updated successfully.');
-                } catch (error) {
-                    console.error('Error processing results data:', error);
-                    alert('An error occurred while processing the results data.');
-                }
-            }
-    
-            function generateUniqueId() {
-                return 'node-' + Math.random().toString(36).substr(2, 9);
-            }
-    
-            // Add Connection functionality
-            document.getElementById('add-connection').addEventListener('click', function() {
-                var selectedNodes = cy.$('node:selected');
-                if (selectedNodes.length === 2) {
-                    var source = selectedNodes[0].id();
-                    var target = selectedNodes[1].id();
-    
-                    fetch('/api/add-connection', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ source_id: source, target_id: target })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            cy.add({
-                                group: 'edges',
-                                data: { source: source, target: target }
-                            });
-                            cy.layout({ name: 'cose', padding: 10, animate: true }).run();
-                            document.getElementById('total-connections').innerText = cy.edges().length;
-                        } else {
-                            alert(`Error: ${data.error}`);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while adding the connection.');
-                    });
-                } else {
-                    alert('Please select exactly two suspects to create a connection.');
-                }
-            });
-    
-            // Web Scraping Tool
-            document.getElementById('web-scraping').addEventListener('click', function() {
-                if (selectedSuspect && selectedSuspect.type === 'suspect') {
-                    fetch('/api/scrape-web', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ suspect_id: selectedSuspect.id })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            alert(`Web scraping initiated for ${selectedSuspect.label}.`);
-                            apiRequestCount += 1;
-                            document.getElementById('api-requests').innerText = apiRequestCount;
-                        } else {
-                            alert(`Error: ${data.error}`);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while initiating web scraping.');
-                    });
-                } else {
-                    alert('Please select a suspect to perform web scraping.');
-                }
-            });
-    
-            // API Integration Tool
-            document.getElementById('api-integration').addEventListener('click', function() {
-                if (selectedSuspect && selectedSuspect.type === 'suspect') {
-                    fetch('/api/api-integration', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ suspect_id: selectedSuspect.id })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            alert(`API integration initiated for ${selectedSuspect.label}.`);
-                            apiRequestCount += 1;
-                            document.getElementById('api-requests').innerText = apiRequestCount;
-                        } else {
-                            alert(`Error: ${data.error}`);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while initiating API integration.');
-                    });
-                } else {
-                    alert('Please select a suspect to perform API integration.');
-                }
-            });
-    
-            // Social Media Scraping Tool
-            document.getElementById('social-media-scraping').addEventListener('click', function() {
-                if (selectedSuspect && selectedSuspect.type === 'suspect') {
-                    fetch('/api/social-media-scraping', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ suspect_id: selectedSuspect.id })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            alert(`Social media scraping initiated for ${selectedSuspect.label}.`);
-                            apiRequestCount += 1;
-                            document.getElementById('api-requests').innerText = apiRequestCount;
-                        } else {
-                            alert(`Error: ${data.error}`);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while initiating social media scraping.');
-                    });
-                } else {
-                    alert('Please select a suspect to perform social media scraping.');
-                }
-            });
-    
-            // Dork Suspect Tool
-            document.getElementById('dork-suspect').addEventListener('click', function() {
-                var selectedNodes = cy.nodes('node:selected');
-                var selectedSuspects = selectedNodes.filter(node => node.data('type') === 'suspect');
-    
-                if (selectedSuspects.length > 0) {
-                    var suspectNode = selectedSuspects[0];
-                    dorkingSuspect = suspectNode.data();
-                    dorkModal.style.display = 'block';
-                } else {
-                    alert('Please select a suspect to continue.');
-                }
-            });
-    
-            // Handle context menu delete via selection
-            // Already handled in context menu
-            // Profile icon functionality
-            var profileIcon = document.getElementById('profile-icon');
-            var accountModal = document.getElementById('account-modal');
-            var logoutButtonModal = document.getElementById('logout-button-modal');
-    
-            profileIcon.addEventListener('click', function() {
-                accountModal.style.display = 'block';
-            });
-    
-            logoutButtonModal.addEventListener('click', function() {
-                accountModal.style.display = 'none';
-                alert('Logged out successfully.');
-                // Implement actual logout functionality here
-            });
-    
-            // Close modals when clicking outside of the content
-            window.onclick = function(event) {
-                if (event.target == addModal) {
-                    addModal.style.display = 'none';
-                    form.reset();
-                }
-                if (event.target == detailModal) {
-                    detailModal.style.display = 'none';
-                }
-                if (event.target == accountModal) {
-                    accountModal.style.display = 'none';
-                }
-                if (event.target == dorkModal) {
-                    dorkModal.style.display = 'none';
-                    dorkForm.reset();
-                }
-                if (event.target == existingSuspectModal) {
-                    existingSuspectModal.style.display = 'none';
-                }
-                if (event.target == imagePreviewModal) {
-                    imagePreviewModal.style.display = 'none';
-                }
-                if (!contextMenu.contains(event.target)) {
-                    contextMenu.style.display = 'none';
-                }
-            };
-    
-            function pollForResults(suspectId, suspectName, interval = 5000, maxAttempts = 20) {
-                let attempts = 0;
-                let pollingMessage = document.getElementById('polling-message');
-                if (pollingMessage) {
-                    pollingMessage.innerText = `Scraping in progress for ${suspectName}...`;
-                    pollingMessage.style.display = 'block';
-                } else {
-                    console.warn('Polling message element not found.');
-                }
-    
-                function checkResults() {
-                    attempts++;
-                    fetch(`/api/get-results?suspect_id=${encodeURIComponent(suspectId)}`)
-                    .then(response => response.json())
-                    .then(resultsData => {
-                        if (resultsData.status === 'success') {
-                            pollingMessage.style.display = 'none';
-                            // Process the data
-                            processResultsData(resultsData.data);
-                            alert(`Data loaded for ${suspectName}.`);
-                            // Update counts
-                            document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
-                            document.getElementById('total-connections').innerText = cy.edges().length;
-                        } else {
-                            if (attempts < maxAttempts) {
-                                // Try again after interval
-                                setTimeout(checkResults, interval);
-                            } else {
-                                pollingMessage.style.display = 'none';
-                                alert(`Failed to load results for ${suspectName} after multiple attempts.`);
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching results:', error);
-                        if (attempts < maxAttempts) {
-                            // Try again after interval
-                            setTimeout(checkResults, interval);
-                        } else {
-                            pollingMessage.style.display = 'none';
-                            alert(`An error occurred while fetching results for ${suspectName}.`);
-                        }
-                    });
-                }
-    
-                // Start the polling
-                checkResults();
-            }
-    
-            /**
-             * Function to process results data and add to Cytoscape graph
-             * Categorizes data by scraping method and website domain name
-             * @param {Object} data - The categorized results data from the backend
-             */
-            function processResultsData(data) {
-                try {
-                    // Define styling based on category is handled by stylesheet
-
-                    // Identify the main suspect node ID
-                    const suspectId = selectedSuspect.id;
-
-                    // Check if the main suspect node exists; if not, add it
-                    if (cy.getElementById(suspectId).length === 0) {
-                        cy.add({
-                            group: 'nodes',
-                            data: {
-                                id: suspectId,
-                                label: selectedSuspect.label,
-                                type: 'suspect',
-                                email: selectedSuspect.email,
-                                nic: selectedSuspect.nic,
-                                socialMedia: selectedSuspect.socialMedia
-                            }
-                        });
-                    }
-
-                    // Prepare arrays to batch add nodes and edges
-                    let newNodes = [];
-                    let newEdges = [];
-
-                    // Iterate over each scraping method
-                    for (let method in data) {
-                        let methodItems = data[method];
-                        const methodNodeId = `method-${method.toLowerCase()}`;
-
-                        // Check if method node exists; if not, add it
-                        if (cy.getElementById(methodNodeId).length === 0) {
-                            newNodes.push({
-                                group: 'nodes',
-                                data: {
-                                    id: methodNodeId,
-                                    label: method.toUpperCase(),
+                                    label: category.replace('_', ' ').toUpperCase(),
                                     type: 'method'
                                 }
                             });
 
-                            // Connect method node to suspect node
                             newEdges.push({
                                 group: 'edges',
                                 data: {
@@ -1764,34 +1179,29 @@
                             });
                         }
 
-                        // Group items by domain within the method
                         let domainGroups = {};
-                        methodItems.forEach(item => {
-                            let domain = item.domain || 'unknown_domain';
+                        items.forEach(item => {
+                            let domain = item.domain || 'Unknown Domain';
                             if (!domainGroups[domain]) {
                                 domainGroups[domain] = [];
                             }
                             domainGroups[domain].push(item);
                         });
 
-                        // Iterate over each domain
                         for (let domain in domainGroups) {
-                            let domainItems = domainGroups[domain];
-                            const domainNodeId = `domain-${method.toLowerCase()}-${domain.replace(/\./g, '-')}`;
-
-                            // Check if domain node exists; if not, add it
+                            const sanitizedDomain = domain.replace(/\./g, '-');
+                            const domainNodeId = `domain-${category.toLowerCase()}-${sanitizedDomain}`;
+                            
                             if (cy.getElementById(domainNodeId).length === 0) {
                                 newNodes.push({
                                     group: 'nodes',
                                     data: {
                                         id: domainNodeId,
                                         label: domain,
-                                        type: 'domain',
-                                        method: method.toLowerCase()
+                                        type: 'domain'
                                     }
                                 });
 
-                                // Connect domain node to method node
                                 newEdges.push({
                                     group: 'edges',
                                     data: {
@@ -1802,45 +1212,27 @@
                                 });
                             }
 
-                            // Iterate over each result item under the domain
-                            domainItems.forEach(item => {
-                                // Generate a unique node ID
-                                let nodeId = generateUniqueId();
-
-                                // Define node label based on available data
-                                let label = item.title || item.link || 'Unknown';
-
-                                // Avoid adding duplicate nodes based on a unique attribute (e.g., link)
-                                if (item.link && cy.nodes(`[data-link="${item.link}"]`).length > 0) {
-                                    // Node already exists based on link
-                                    return;
-                                }
-
-                                // Enrich node data with additional metadata
-                                let nodeData = {
-                                    id: nodeId,
-                                    label: label,
-                                    link: item.link || '',
-                                    snippet: item.snippet || '',
-                                    category: item.category || 'N/A',
-                                    domain: domain,
-                                    method: method.toLowerCase(),
-                                    type: 'result',
-                                    image_url: item.image_url || '' // For image-related categories
-                                };
-
-                                // Add node to the newNodes array
+                            domainGroups[domain].forEach(result => {
+                                const resultNodeId = `result-${generateUniqueId()}`;
                                 newNodes.push({
                                     group: 'nodes',
-                                    data: nodeData
+                                    data: {
+                                        id: resultNodeId,
+                                        label: result.title || result.link || 'Unknown',
+                                        link: result.link || '#',
+                                        snippet: result.snippet || 'N/A',
+                                        category: result.category || 'N/A',
+                                        domain: result.domain || 'N/A',
+                                        type: 'result',
+                                        image_url: result.image_url || ''
+                                    }
                                 });
 
-                                // Add an edge connecting this node to the domain node
                                 newEdges.push({
                                     group: 'edges',
                                     data: {
                                         source: domainNodeId,
-                                        target: nodeId,
+                                        target: resultNodeId,
                                         type: 'result-connection'
                                     }
                                 });
@@ -1848,22 +1240,23 @@
                         }
                     }
 
-                    // Ensure newNodes and newEdges are arrays
-                    newNodes = Array.isArray(newNodes) ? newNodes : [newNodes];
-                    newEdges = Array.isArray(newEdges) ? newEdges : [newEdges];
-
-                    // Batch add nodes and edges to Cytoscape
-                    cy.batch(() => {
+                    // Add new nodes and edges to Cytoscape
+                    if (newNodes.length > 0) {
                         cy.add(newNodes);
-                        cy.add(newEdges);
-                    });
+                        console.log(`Added ${newNodes.length} new nodes.`);
+                    }
 
-                    // Apply layout after adding new elements
+                    if (newEdges.length > 0) {
+                        cy.add(newEdges);
+                        console.log(`Added ${newEdges.length} new edges.`);
+                    }
+
+                    // Apply layout and update UI
                     cy.layout({ name: 'cose', padding: 10, animate: true }).run();
 
-                    // Update overall details
-                    document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
-                    document.getElementById('total-connections').innerText = cy.edges().length;
+                    // Update UI counts and Suspects List
+                    updateCounts();
+                    updateSuspectsList();
 
                     console.log('Results data processed and graph updated successfully.');
                 } catch (error) {
@@ -1872,10 +1265,6 @@
                 }
             }
 
-            /**
-             * Function to generate a unique ID for nodes
-             * @returns {string} - A unique identifier string
-             */
             function generateUniqueId() {
                 return 'node-' + Math.random().toString(36).substr(2, 9);
             }
@@ -1884,7 +1273,105 @@
                 cy.resize();
                 cy.fit();
             });
+
+            // Function to update counts
+            function updateCounts() {
+                document.getElementById('total-suspects').innerText = cy.nodes().filter(node => node.data('type') === 'suspect').length;
+                document.getElementById('total-connections').innerText = cy.edges().length;
+            }
+
+            // Function to update Suspects List
+            function updateSuspectsList() {
+                var suspectsContainer = document.getElementById('suspects-container');
+                suspectsContainer.innerHTML = ''; // Clear existing list
+
+                var suspects = cy.nodes().filter(node => node.data('type') === 'suspect');
+
+                suspects.forEach(suspect => {
+                    var suspectItem = document.createElement('div');
+                    suspectItem.classList.add('suspect-item');
+                    suspectItem.innerHTML = `
+                        <strong>${suspect.data('label') || 'Unnamed Suspect'}</strong><br>
+                        Email: ${suspect.data('email') || 'N/A'}<br>
+                        NIC: ${suspect.data('nic') || 'N/A'}<br>
+                        Social Media: ${suspect.data('socialMedia') || 'N/A'}
+                    `;
+                    suspectItem.dataset.id = suspect.id();
+
+                    // Add click event to select the node in the graph
+                    suspectItem.addEventListener('click', function() {
+                        cy.nodes().unselect();
+                        var node = cy.getElementById(this.dataset.id);
+                        node.select();
+                        cy.center(node);
+                        // Highlight the list item
+                        document.querySelectorAll('.suspect-item').forEach(item => item.classList.remove('selected'));
+                        this.classList.add('selected');
+                    });
+
+                    suspectsContainer.appendChild(suspectItem);
+                });
+            }
+
+            // Initial Suspects List Update
+            updateSuspectsList();
+
+            // Function to handle when nodes are added or removed
+            cy.on('add remove', 'node', function(evt){
+                updateCounts();
+                updateSuspectsList();
+            });
+
+            // Function to handle when nodes are selected via the graph
+            cy.on('select unselect', 'node[type="suspect"]', function(evt){
+                var selected = cy.$('node[type="suspect"]:selected');
+                document.querySelectorAll('.suspect-item').forEach(item => {
+                    if (selected.length > 0 && item.dataset.id === selected.id()) {
+                        item.classList.add('selected');
+                    } else {
+                        item.classList.remove('selected');
+                    }
+                });
+            });
         });
     </script>
+        <script>
+            // Check authentication state when document loads
+            document.addEventListener('DOMContentLoaded', function() {
+                auth.onAuthStateChanged(function(user) {
+                    if (user) {
+                        // User is signed in
+                        // Get reference to Firestore document
+                        db.collection('users').doc(user.uid).get()
+                            .then((doc) => {
+                                if (doc.exists) {
+                                    // Update username from Firestore data
+                                    document.getElementById('account-username').textContent = doc.data().username || 'Not Set';
+                                    // Update email from Firebase Auth
+                                    document.getElementById('account-email').textContent = user.email;
+                                } else {
+                                    console.log("No user document found!");
+                                }
+                            })
+                            .catch((error) => {
+                                console.error("Error getting user document:", error);
+                            });
+                    } else {
+                        // No user is signed in, redirect to login
+                        window.location.replace('login.html');
+                    }
+                });
+
+                // Handle logout button click
+                document.getElementById('logout-button-modal').addEventListener('click', function() {
+                    auth.signOut().then(() => {
+                        window.location.replace('login.html');
+                    }).catch((error) => {
+                        console.error("Error signing out:", error);
+                    });
+                });
+            });
+        </script>
+    
 </body>
 </html>

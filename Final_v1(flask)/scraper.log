@@ -1,0 +1,52 @@
+2024-12-02 15:43:10,558:INFO:=== Instagram Profile Scraper Started ===
+2024-12-02 15:43:13,257:INFO:Navigating to Instagram login page.
+2024-12-02 15:43:13,885:INFO:Entered username.
+2024-12-02 15:43:15,965:INFO:Entered password.
+2024-12-02 15:43:17,364:INFO:Submitted login form.
+2024-12-02 15:43:25,248:INFO:No 'Save Your Login Info?' popup found.
+2024-12-02 15:43:25,255:INFO:No 'Turn on Notifications' popup found.
+2024-12-02 15:43:25,275:WARNING:Profile icon not found using available selectors.
+2024-12-02 15:43:25,275:ERROR:Login might have failed. Profile icon not found.
+2024-12-02 15:43:25,398:INFO:Screenshot of failed login saved as 'login_failed.png'.
+2024-12-02 15:46:25,572:INFO:=== Instagram Profile Scraper Started ===
+2024-12-02 15:46:28,367:INFO:Navigating to Instagram login page.
+2024-12-02 15:46:28,994:INFO:Entered username.
+2024-12-02 15:46:31,236:INFO:Entered password.
+2024-12-02 15:46:32,770:INFO:Submitted login form.
+2024-12-02 15:46:41,184:INFO:No 'Save Your Login Info?' popup found.
+2024-12-02 15:46:41,191:INFO:No 'Turn on Notifications' popup found.
+2024-12-02 15:46:56,592:WARNING:Profile icon not found using aria-label. Trying alternative selector.
+2024-12-02 15:47:12,045:ERROR:Profile icon not found using both selectors.
+2024-12-02 15:47:12,045:ERROR:Login might have failed. Profile icon not found.
+2024-12-02 15:47:12,207:INFO:Screenshot of failed login saved as 'login_failed.png'.
+2024-12-02 15:52:09,611:INFO:=== Instagram Profile Scraper Started ===
+2024-12-02 15:52:12,573:INFO:Navigated to Instagram login page.
+2024-12-02 15:52:13,195:INFO:Entered username.
+2024-12-02 15:52:14,732:INFO:Entered password.
+2024-12-02 15:52:17,675:INFO:Submitted login form.
+2024-12-02 15:52:33,146:INFO:No 'Save Your Login Info?' popup found.
+2024-12-02 15:52:43,454:INFO:No 'Turn on Notifications' popup found.
+2024-12-02 15:52:58,892:WARNING:Profile icon not found using aria-label. Trying alternative selector.
+2024-12-02 15:53:14,334:ERROR:Profile icon not found using both selectors.
+2024-12-02 15:53:14,334:ERROR:Login might have failed. Profile icon not found.
+2024-12-02 15:53:14,464:INFO:Screenshot of failed login saved as 'login_failed.png'.
+2024-12-02 16:01:49,764:INFO:=== Instagram Profile Scraper Started ===
+2024-12-02 16:01:52,788:INFO:Navigated to Instagram login page.
+2024-12-02 16:01:53,404:INFO:Entered username.
+2024-12-02 16:01:55,388:INFO:Entered password.
+2024-12-02 16:01:57,216:INFO:Submitted login form.
+2024-12-02 16:02:13,812:INFO:No 'Save Your Login Info?' popup found.
+2024-12-02 16:02:24,111:INFO:No 'Turn on Notifications' popup found.
+2024-12-02 16:02:39,551:WARNING:Profile icon not found using aria-label. Trying alternative selector.
+2024-12-02 16:02:55,007:ERROR:Profile icon not found using both selectors.
+2024-12-02 16:02:55,007:ERROR:Login might have failed. Profile icon not found.
+2024-12-02 16:02:55,118:INFO:Screenshot of failed login saved as 'login_failed.png'.
+2024-12-02 16:05:17,975:INFO:=== Instagram Profile Scraper Started ===
+2024-12-02 16:05:20,731:INFO:Navigated to Instagram login page.
+2024-12-02 16:05:21,351:INFO:Entered username.
+2024-12-02 16:05:24,316:INFO:Entered password.
+2024-12-02 16:05:25,826:INFO:Submitted login form.
+2024-12-02 16:05:47,702:WARNING:Profile icon not found using aria-label. Trying alternative selector.
+2024-12-02 16:06:03,135:ERROR:Profile icon not found using both selectors.
+2024-12-02 16:06:03,135:ERROR:Login might have failed. Profile icon not found.
+2024-12-02 16:06:03,251:INFO:Screenshot of failed login saved as 'login_failed.png'.

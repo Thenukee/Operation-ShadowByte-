@@ -207,9 +207,10 @@ def extract_google_web_details(search_results):
     Extract details from Google Web search results.
     """
     details = []
-    for item in search_results:
+    for idx, item in enumerate(search_results):
         domain = urlparse(item.get('link', '')).netloc
         details.append({
+            'id': f'google-web-{idx}',
             'title': item.get('title'),
             'link': item.get('link'),
             'snippet': item.get('snippet'),
@@ -223,15 +224,19 @@ def extract_google_image_details(search_results):
     Extract details from Google Image search results.
     """
     details = []
-    for item in search_results:
+    for idx, item in enumerate(search_results):
         domain = urlparse(item.get('link', '')).netloc
+        image_url = item.get('image', {}).get('thumbnailLink', '')
+        if not image_url:
+            continue  # Skip items without an image URL
         details.append({
+            'id': f'google-image-{idx}',
             'title': item.get('title'),
             'link': item.get('link'),
-            'snippet': '',
+            'snippet': item.get('snippet'),
             'category': 'google_images',
-            'image_url': item.get('link'),
-            'domain': domain
+            'domain': domain,
+            'image_url': image_url
         })
     return details
 
@@ -240,9 +245,10 @@ def extract_google_document_details(search_results):
     Extract details from Google Document search results.
     """
     details = []
-    for item in search_results:
+    for idx, item in enumerate(search_results):
         domain = urlparse(item.get('link', '')).netloc
         details.append({
+            'id': f'google-document-{idx}',
             'title': item.get('title'),
             'link': item.get('link'),
             'snippet': item.get('snippet'),
@@ -256,9 +262,10 @@ def extract_bing_web_details(search_results):
     Extract details from Bing Web search results.
     """
     details = []
-    for item in search_results.get('webPages', {}).get('value', []):
+    for idx, item in enumerate(search_results.get('webPages', {}).get('value', [])):
         domain = urlparse(item.get('url', '')).netloc
         details.append({
+            'id': f'bing-web-{idx}',
             'title': item.get('name'),
             'link': item.get('url'),
             'snippet': item.get('snippet'),
@@ -439,3 +446,39 @@ def perform_dorking(suspect_id, search_all=True, search_engines=['google', 'bing
     save_to_json(all_details, filename=results_file)
 
     print(f"Dorking completed for suspect ID {suspect_id}.")
+
+# ------------------------------ Instagram Scraping ------------------------------
+
+def perform_instagram_scraping(suspect_name, num_results=20):
+    """
+    Perform Google Dorking to scrape Instagram usernames and links based on the suspect's name.
+    """
+    query = f'"{suspect_name}" site:instagram.com'
+    try:
+        service = build("customsearch", "v1", developerKey=GOOGLE_API_KEY)
+        res = service.cse().list(q=query, cx=GOOGLE_SEARCH_ENGINE_ID, num=10).execute()
+        results = res.get('items', [])
+        
+        instagram_data = []
+        for item in results[:num_results]:
+            link = item.get('link')
+            username = extract_instagram_username(link)
+            if username:
+                instagram_data.append({
+                    'username': username,
+                    'link': link
+                })
+        return instagram_data
+    except HttpError as e:
+        print(f"An error occurred: {e}")
+        return []
+
+def extract_instagram_username(url):
+    """
+    Extract Instagram username from the URL.
+    """
+    parsed_url = urlparse(url)
+    path = parsed_url.path.strip('/')
+    if path:
+        return path.split('/')[0]
+    return None

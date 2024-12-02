@@ -634,41 +634,16 @@
 
         // Listen for Authentication State Changes
         onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // User is signed in
-                console.log('User signed in:', user.email);
-                try {
-                    const userDocRef = doc(db, "users", user.uid);
-                    const docSnap = await getDoc(userDocRef);
-                    if (docSnap.exists()) {
-                        const userData = docSnap.data();
-                        console.log("User Data:", userData);
-                        // Update the main application UI with user data
-                        welcomeMessage.innerHTML = `
-                            Welcome, <strong>${userData.email}</strong><br>
-                            Account created on: ${userData.createdAt?.toDate()?.toLocaleDateString() || 'N/A'}
-                        `;
-                        // Show the main application
-                        appPage.style.display = 'block';
-                        // Hide the auth containers
-                        loginPage.style.display = 'none';
-                        signupPage.style.display = 'none';
-                        resetModal.style.display = 'none';
-                    } else {
-                        console.log("No such document!");
-                        displayMessage(loginMessage, 'error', 'No user data found.');
-                        await signOut(auth);
-                    }
-                } catch (error) {
-                    console.error("Error getting document:", error);
-                    displayMessage(loginMessage, 'error', 'Error retrieving user data.');
-                }
+            if (user && user.emailVerified) {
+                // Redirect to index.html after successful login
+                window.location.href = 'index.html';
             } else {
-                // No user is signed in
-                console.log('No user signed in.');
+                // No user is signed in or email not verified
+                console.log('No verified user signed in.');
                 // Show the login page by default
-                appPage.style.display = 'none';
                 loginPage.style.display = 'flex';
+                signupPage.style.display = 'none';
+                resetModal.style.display = 'none';
             }
         });
 
