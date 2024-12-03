@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./Final_v1(flask)/app/services"
+    ]
+}
